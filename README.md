@@ -41,7 +41,7 @@ webrtc.on('readyToCall', function () {
 
 ## Example
 
-### Video Chat Component
+### P2P Video Chat Component
 ```jsx
 import React, { Component } from 'react';
 import LioWebRTC from 'liowebrtc';
