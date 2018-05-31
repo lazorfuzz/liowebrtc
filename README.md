@@ -5,6 +5,14 @@ LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React.
 
 ## Usage
 
+### Installation
+
+```js
+yarn add liowebrtc
+// Or
+npm i liowebrtc
+```
+
 ### Import LioWebRTC
 ```js
 import LioWebRTC from 'liowebrtc';
