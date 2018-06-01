@@ -107,18 +107,19 @@ class Party extends Component {
   
   // Show fellow peers in the room
   generateRemotes = () => this.state.peers.map((p) => (
-    <PeerTile key={p.id}>
-      <VideoContainer id={`container_${this.webrtc.getDomId(p)}`}>
+    <div key={p.id}>
+      <div id={`container_${this.webrtc.getDomId(p)}`}>
         <video
           key={this.webrtc.getDomId(p)}
+          // Important: The video element needs both an id and ref
           id={this.webrtc.getDomId(p)}
           ref={(v) => this.remoteVideos[p.id] = v}
           />
-      </VideoContainer>
-      <PeerInfo>
+      </div>
+      <div>
         <p>{p.nick}</p>
-      </PeerInfo>
-    </PeerTile>
+      </div>
+    </div>
     ));
   
   disconnect = () => {
@@ -133,25 +134,25 @@ class Party extends Component {
   
   render() {
     return (
-      <Wrapper>
-        <PeerTile>
-          <VideoContainer>
+      <div>
+        <div>
+          <div>
             <video
               className={styles.vid}
               // Important: The local video element needs to have both an ID and ref
               id="localVideo"
               ref={(vid) => { this.localVid = vid; }}
             />
-          </VideoContainer>
-          <PeerInfo>
+          </div>
+          <div>
             <p>{this.state.nick}</p>
-          </PeerInfo>
-        </PeerTile>
+          </div>
+        </div>
 
         <div id="remoteVideos">
           {this.generateRemotes()}
         </div>
-      </Wrapper>
+      </div>
     );
   }
 }
