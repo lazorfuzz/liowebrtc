@@ -24,10 +24,14 @@ import LioWebRTC from 'liowebrtc';
 const webrtc = new LioWebRTC({
     // The local video reference set within your render function, or the element's ID
     localVideoEl: 'localVid',
-    // Immediately request camera and mic access. Set to false if you're only transmitting data.
+    // Immediately request camera and mic access.
     autoRequestMedia: true,
     // Displays events emitted by the webrtc object in the console.
-    debug: true
+    debug: true,
+    // Set this to true if you want to disable video/audio channels, and only enable data channel.
+    dataOnly: false,
+    // The url for your signaling server
+    url: 'https://sandbox.simplewebrtc.com:443/',
 });
 ```
 
