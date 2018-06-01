@@ -3,6 +3,8 @@ An Electron-compatible, event-based WebRTC library that makes it easy to embed p
 
 LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React, JSX, and Electron.
 
+[Click here](https://jolly-bose-1b08cb.netlify.com/) to see a chatroom demo app built with React and LioWebRTC.
+
 ## Usage
 
 ### Installation
