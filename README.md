@@ -116,9 +116,7 @@ class Party extends Component {
           ref={(v) => this.remoteVideos[p.id] = v}
           />
       </div>
-      <div>
         <p>{p.nick}</p>
-      </div>
     </div>
     ));
   
@@ -136,17 +134,12 @@ class Party extends Component {
     return (
       <div>
         <div>
-          <div>
             <video
-              className={styles.vid}
               // Important: The local video element needs to have both an ID and ref
               id="localVideo"
               ref={(vid) => { this.localVid = vid; }}
             />
-          </div>
-          <div>
             <p>{this.state.nick}</p>
-          </div>
         </div>
 
         <div id="remoteVideos">
