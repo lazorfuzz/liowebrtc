@@ -38,10 +38,5 @@
     "test-page": "echo \"open https://localhost:8443/test/\" && stupid-server -s",
     "test": "node test/selenium/index.js"
   },
-  "false": {},
-  "pre-commit": [
-    "lint",
-    "validate",
-    "test"
-  ]
+  "false": {}
 }
