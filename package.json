@@ -2,7 +2,7 @@
   "name": "liowebrtc",
   "version": "0.1.4",
   "repository": "https://github.com/lazorfuzz/liowebrtc",
-  "main": "./src/liowebrtc.js",
+  "main": "./dist/liowebrtc.js",
   "description": "A react-compatible webRTC helper library that makes it easy to bake peer to peer communication into react components.",
   "dependencies": {
     "attachmediastream": "^2.0.0",
@@ -16,10 +16,11 @@
     "wildemitter": "^1.2.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
     "browserify": "^13.1.0",
     "chromedriver": "^2.29.0",
     "geckodriver": "^1.6.1",
-    "precommit-hook": "^3.0.0",
     "request": "^2.72.0",
     "selenium-webdriver": "^3.0.1",
     "tape": "^4.0.0",
@@ -30,9 +31,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "node build.js",
+    "build": "babel src --presets babel-preset-es2015 --out-dir dist",
     "test-travis": "test/run-selenium",
-    "updateLatest": "./scripts/updateLatest.sh",
     "lint": "jshint src",
     "validate": "npm ls",
     "test-page": "echo \"open https://localhost:8443/test/\" && stupid-server -s",
