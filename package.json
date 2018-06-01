@@ -3,7 +3,7 @@
   "version": "0.1.5",
   "repository": "https://github.com/lazorfuzz/liowebrtc",
   "main": "./dist/liowebrtc.js",
-  "description": "A react-compatible webRTC helper library that makes it easy to bake peer to peer communication into react components.",
+  "description": "An Electron-compatible webRTC library that makes it easy to embed peer to peer communication into react components.",
   "dependencies": {
     "attachmediastream": "^2.0.0",
     "filetransfer": "^2.0.4",
@@ -18,16 +18,13 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
-    "browserify": "^13.1.0",
     "chromedriver": "^2.29.0",
     "geckodriver": "^1.6.1",
     "request": "^2.72.0",
     "selenium-webdriver": "^3.0.1",
     "tape": "^4.0.0",
     "testling": "^1.7.1",
-    "travis-multirunner": "^3.0.0",
-    "uglify-js": "^2.7.3",
-    "webrtc-adapter": "^4.0.0"
+    "travis-multirunner": "^3.0.0"
   },
   "license": "MIT",
   "scripts": {
