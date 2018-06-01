@@ -1,11 +1,12 @@
 import util from 'util';
 import mockconsole from 'mockconsole';
-import localMedia from 'localmedia';
+import LocalMedia from './localmedia';
 import Peer from './peer';
 import webrtcSupport from './webrtcsupport';
 
-class WebRTC {
+class WebRTC extends LocalMedia {
   constructor(opts) {
+    super(opts);
     const self = this;
     const options = opts || {};
     const config = this.config = {
@@ -52,7 +53,7 @@ class WebRTC {
     this.peers = [];
 
       // call localMedia constructor
-    localMedia.call(this, this.config);
+    // localMedia.call(this, this.config);
 
     this.on('speaking', () => {
       if (!self.hardMuted) {
@@ -149,7 +150,5 @@ class WebRTC {
     peer.sendDirectly(messageLabel, payload);
   }
 }
-
-util.inherits(WebRTC, localMedia);
 
 export default WebRTC;
