@@ -140,6 +140,14 @@ class WebRTC {
       }
     });
   }
+
+  shout(messageLabel, payload) {
+    sendDirectlyToAll(messageLabel, payload, 'liowebrtc');
+  }
+
+  whisper(peer, messageLabel, payload) {
+    peer.sendDirectly(messageLabel, payload);
+  }
 }
 
 util.inherits(WebRTC, localMedia);

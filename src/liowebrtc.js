@@ -19,6 +19,7 @@ class LioWebRTC extends WildEmitter {
       remoteVideosEl: '',
       enableDataChannels: true,
       autoRequestMedia: false,
+      dataOnly: false,
       autoRemoveVideos: true,
       adjustPeerVolume: true,
       peerVolumeWhenSpeaking: 0.25,
@@ -120,8 +121,8 @@ class LioWebRTC extends WildEmitter {
     opts.debug = false;
     this.webrtc = new WebRTC(opts);
 
-      // attach a few methods from underlying lib to simple.
-    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers'].forEach((method) => {
+      // attach a few methods from underlying lib to liowebrtc.
+    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers', 'shout', 'whisper'].forEach((method) => {
       self[method] = self.webrtc[method].bind(self.webrtc);
     });
 
@@ -239,7 +240,7 @@ class LioWebRTC extends WildEmitter {
       if (data.type === 'volume') {
         self.emit('remoteVolumeChange', data.payload, peer);
       } else {
-        self.emit(data.type, data.payload, peer);
+        self.emit('receivedPeerData', data.type, data.payload, peer);
       }
     });
 
@@ -320,8 +321,8 @@ class LioWebRTC extends WildEmitter {
                 type,
                 enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                 receiveMedia: {
-                  offerToReceiveAudio: type !== 'screen' && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
-                  offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
+                  offerToReceiveAudio: type !== 'screen' && !self.config.dataOnly && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
+                  offerToReceiveVideo: !self.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo
                 }
               });
               self.emit('createdPeer', peer);
