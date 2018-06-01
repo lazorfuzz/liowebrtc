@@ -1,7 +1,7 @@
-# liowebrtc
-A react-compatible webRTC library that makes it easy to bake peer to peer communication into react components.
+# LioWebRTC
+An Electron-compatible, event-based WebRTC library that makes it easy to embed peer to peer communication into React components.
 
-LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React.
+LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React, JSX, and Electron.
 
 ## Usage
 
@@ -22,21 +22,66 @@ import LioWebRTC from 'liowebrtc';
 
 ```js
 const webrtc = new LioWebRTC({
-    // The local video reference set within your render function, or an element ID
+    // The local video reference set within your render function, or the element's ID
     localVideoEl: 'localVid',
-    // Immediately request camera access
-    autoRequestMedia: true
+    // Immediately request camera and mic access. Set to false if you're only transmitting data.
+    autoRequestMedia: true,
+    // Displays events emitted by the webrtc object in the console.
+    debug: true
 });
 ```
 
 ### Join a room once it's ready
 
 ```js
-webrtc.on('readyToCall', function () {
+webrtc.on('readyToCall', () => {
     // Create or join a room with any name
     webrtc.joinRoom('your room name');
 });
 ```
+
+### Emitting to the hive
+Sometimes a peer wants to let every other peer in the room to know about something. This can be accomplished with 
+```shout(messageLabel, payload)```
+```js
+webrtc.shout('taskCompleted', { success: true, id: '137' });
+```
+Now for the recipients, handle the peer event with a listener:
+```js
+webrtc.on('taskCompleted', (data, peer) => {
+    if (data.success) console.log(`Peer ${peer.id} completed task ${data.id}`);
+});
+```
+
+### Communicating with a single peer
+Sometimes a peer only wants to send data directly to another peer. This can be accomplished with 
+```whisper(peer, messageLabel, payload)```
+```js
+webrtc.whisper(peer, 'directMessage', { msg: 'Hello world!' });
+// Or
+webrtc.getPeers()[0].sendDirectly('directMessage', { msg: 'Hello world!' });
+```
+Receiving the message is the same as handling a peer event:
+```js
+webrtc.on('directMessage', (data, peer) => {
+    console.log(`Peer ${peer.id} says: ${data.msg}`);
+});
+```
+
+### Live-syncing state
+```js
+componentDidUpdate(prevProps, prevState) {
+    if (this.state.position !== prevState.position) {
+        this.webrtc.shout('stateUpdate', this.state);
+    }
+}
+
+this.webrtc.on('stateUpdate', (state, peer) => {
+    this.setState({ peerState: state });
+});
+```
+
+All communications via shout/whisper are sent over the default data channel and emitted by the LioWebRTC instance as events. You can create your own custom listeners suited for whatever purpose you'd like.
 
 
 ## Example
@@ -212,7 +257,7 @@ constructor
 To set up event listeners, use the LioWebRTC instance created with the
 constructor. Example:
 
-```javascript
+```js
 webrtc.on('connectionReady', (sessionId) => {
     // ...
 })
@@ -279,17 +324,17 @@ enabled) streams have started
 
 `resume()` - resumes sending audio and video to all peers
 
-`sendToAll(messageType, payload)` - broadcasts a message to all peers in the
+`sendToAll(messageLabel, payload)` - broadcasts a message to all peers in the
 room via the signaling channel (websocket)
 
-- `string messageType` - the key for the type of message being sent
+- `string messageLabel` - The event label that be broadcasted via the signaling server
 - `object payload` - an arbitrary value or object to send to peers
 
-`sendDirectlyToAll(messageType, payload, channel)` - broadcasts a message
+`sendDirectlyToAll(messageLabel, payload, channel)` - broadcasts a message
 to all peers in the room via a dataChannel
 
 - `string channel` - (optional) the label for the dataChannel to send on
-- `string messageType` - the key for the type of message being sent
+- `string messageLabel` - the event label that peers will listen for
 - `object payload` - an arbitrary value or object to send to peers
 
 `getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
@@ -344,5 +389,5 @@ communicate with the signaling server. The connection object comes with these me
 
 ### Signaling Server
 
-LioWebRTC uses the signaling server provided for testing purposes by SimpleWebRTC. To use this in production,
-you will need to set up your own instance of [signalmaster](https://github.com/andyet/signalmaster).
+LioWebRTC uses the signaling server provided for testing purposes by SimpleWebRTC.
+You will need to set up your own [signalmaster](https://github.com/andyet/signalmaster) server, and pass in your server's url when creating a new instance of LioWebRTC. 
