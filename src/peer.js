@@ -1,4 +1,3 @@
-import util from 'util';
 import PeerConnection from 'rtcpeerconnection';
 import WildEmitter from 'wildemitter';
 import FileTransfer from 'filetransfer';
@@ -16,7 +15,7 @@ function isAllTracksEnded(stream) {
   return isAllTracksEnded;
 }
 
-class Peer extends WildEmitter{
+class Peer extends WildEmitter {
   constructor(options) {
     super();
     const self = this;
@@ -294,7 +293,5 @@ class Peer extends WildEmitter{
     return sender;
   }
 }
-
-util.inherits(Peer, WildEmitter);
 
 export default Peer;
