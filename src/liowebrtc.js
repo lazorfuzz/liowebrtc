@@ -55,9 +55,10 @@ class LioWebRTC extends WildEmitter {
     });
 
     if (options.dataOnly) {
-      console.log('data only');
       this.config.media.video = false;
       this.config.media.audio = false;
+      this.config.receiveMedia.offerToReceiveAudio = false;
+      this.config.receiveMedia.offerToReceiveVideo = false;
     }
 
       // attach detected support for convenience

@@ -143,7 +143,7 @@ class WebRTC extends LocalMedia {
   }
 
   shout(messageLabel, payload) {
-    sendDirectlyToAll(messageLabel, payload, 'liowebrtc');
+    this.sendDirectlyToAll(messageLabel, payload, 'liowebrtc');
   }
 
   whisper(peer, messageLabel, payload) {

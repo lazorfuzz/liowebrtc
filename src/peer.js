@@ -16,13 +16,10 @@ function isAllTracksEnded(stream) {
   return isAllTracksEnded;
 }
 
-class Peer {
+class Peer extends WildEmitter{
   constructor(options) {
+    super();
     const self = this;
-
-      // call emitter constructor
-    WildEmitter.call(this);
-
     this.id = options.id;
     this.parent = options.parent;
     this.type = options.type || 'video';
