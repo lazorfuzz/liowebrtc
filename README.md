@@ -42,29 +42,29 @@ webrtc.on('readyToCall', () => {
 
 ### Emitting to the hive
 Sometimes a peer wants to let every other peer in the room to know about something. This can be accomplished with 
-```shout(messageLabel, payload)```
+```shout(messageType, payload)```
 ```js
 webrtc.shout('taskCompleted', { success: true, id: '137' });
 ```
 Now for the recipients, handle the peer event with a listener:
 ```js
-webrtc.on('taskCompleted', (data, peer) => {
-    if (data.success) console.log(`Peer ${peer.id} completed task ${data.id}`);
+webrtc.on('receivedPeerData', (type, data, peer) => {
+    if (type === 'taskCompleted' && data.success) {
+        console.log(`Peer ${peer.id} completed task ${data.id}`);
+    }
 });
 ```
 
 ### Communicating with a single peer
 Sometimes a peer only wants to send data directly to another peer. This can be accomplished with 
-```whisper(peer, messageLabel, payload)```
+```whisper(peer, messageType, payload)```
 ```js
 webrtc.whisper(peer, 'directMessage', { msg: 'Hello world!' });
-// Or
-webrtc.getPeers()[0].sendDirectly('directMessage', { msg: 'Hello world!' });
 ```
 Receiving the message is the same as handling a peer event:
 ```js
-webrtc.on('directMessage', (data, peer) => {
-    console.log(`Peer ${peer.id} says: ${data.msg}`);
+webrtc.on('receivedPeerData', (type, data, peer) => {
+    if (type === 'directMessage') console.log(`Peer ${peer.id} says: ${data.msg}`);
 });
 ```
 
@@ -76,8 +76,8 @@ componentDidUpdate(prevProps, prevState) {
     }
 }
 
-this.webrtc.on('stateUpdate', (state, peer) => {
-    this.setState({ peerState: state });
+this.webrtc.on('receivedPeerData', (type, state, peer) => {
+    if(type === 'stateUpdate') this.setState({ peerState: state });
 });
 ```
 
@@ -324,17 +324,26 @@ enabled) streams have started
 
 `resume()` - resumes sending audio and video to all peers
 
-`sendToAll(messageLabel, payload)` - broadcasts a message to all peers in the
+`sendToAll(messageType, payload)` - broadcasts a message to all peers in the
 room via the signaling channel (websocket)
 
 - `string messageLabel` - The event label that be broadcasted via the signaling server
 - `object payload` - an arbitrary value or object to send to peers
 
-`sendDirectlyToAll(messageLabel, payload, channel)` - broadcasts a message
+`sendDirectlyToAll(messageType, payload, channel)` - broadcasts a message
 to all peers in the room via a dataChannel
 
+- `string messageType` - the event label that peers will listen for
+- `object payload` - an arbitrary value or object to send to peers
 - `string channel` - (optional) the label for the dataChannel to send on
-- `string messageLabel` - the event label that peers will listen for
+
+`shout(messageType, payload)` - broadcasts a message
+to all peers in the room via the default data channel
+- `string messageType` - A value that represents the classification of the payload
+- `object payload` - an arbitrary value or object to send to peers
+
+`whisper(peer, messageType, payload)` - sends a message to a single peer in the room
+- `string messageType` - A value that represents the classification of the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
