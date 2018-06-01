@@ -54,6 +54,11 @@ class LioWebRTC extends WildEmitter {
       this.config[o] = options[o];
     });
 
+    if (this.config.dataOnly) {
+      this.config.media.video = false;
+      this.config.media.audio = false;
+    }
+
       // attach detected support for convenience
     this.capabilities = webrtcSupport;
 
