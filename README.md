@@ -81,7 +81,7 @@ componentDidUpdate(prevProps, prevState) {
 }
 
 this.webrtc.on('receivedPeerData', (type, state, peer) => {
-    if(type === 'stateUpdate') this.setState({ peerState: state });
+    if (type === 'stateUpdate') this.setState({ peerState: state });
 });
 ```
 
@@ -271,6 +271,8 @@ webrtc.on('connectionReady', (sessionId) => {
 
 `'connectionReady', sessionId` - emitted when the signaling connection emits the
 `connect` event, with the unique id for the session.
+
+`'receivedPeerData', type, payload, peer` - emitted when a peer sends data via `shout` or `whisper`
 
 `'createdPeer', peer` - emitted three times:
 
