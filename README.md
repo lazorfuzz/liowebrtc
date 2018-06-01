@@ -217,6 +217,8 @@ export default Party;
   - `bool autoRequestMedia` - *optional(=true)* option to automatically request
   user media. Use `true` to request automatically, or `false` to request media
   later with `startLocalVideo`
+  - `bool dataOnly` *optional(=false)* option to ensure that video and audio stream channels
+  are turned off
   - `bool enableDataChannels` *optional(=true)* option to enable/disable data
   channels (used for volume levels or direct messaging)
   - `bool autoRemoveVideos` - *optional(=true)* option to automatically remove
