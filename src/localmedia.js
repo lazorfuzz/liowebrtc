@@ -1,4 +1,3 @@
-import util from 'util';
 import hark from 'hark';
 import getScreenMedia from 'getscreenmedia';
 import WildEmitter from 'wildemitter';
@@ -322,8 +321,6 @@ class LocalMedia extends WildEmitter {
       }
   }
 }
-
-util.inherits(LocalMedia, WildEmitter);
 
 
 export default LocalMedia;
