@@ -323,13 +323,13 @@ class LioWebRTC extends WildEmitter {
         let type;
         let peer;
 
-        for (const i of Object.keys(roomDescription.clients)) {
+        for (id in roomDescription.clients) {
           client = roomDescription.clients[id];
-          for (const t of Object.keys(client)) {
+          for (type in client) {
             if (client[type]) {
               peer = self.webrtc.createPeer({
-                id: i,
-                type: t,
+                id,
+                type,
                 enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                 receiveMedia: {
                   offerToReceiveAudio: type !== 'screen' && !self.config.dataOnly && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
