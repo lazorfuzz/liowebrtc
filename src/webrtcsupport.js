@@ -38,5 +38,5 @@ export default {
   SessionDescription,
   IceCandidate,
   MediaStream,
-  getUserMedia
+  getUserMedia,
 };

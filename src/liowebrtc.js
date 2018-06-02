@@ -25,32 +25,32 @@ class LioWebRTC extends WildEmitter {
       peerVolumeWhenSpeaking: 0.25,
       media: {
         video: true,
-        audio: true
+        audio: true,
       },
       receiveMedia: {
         offerToReceiveAudio: 1,
-        offerToReceiveVideo: 1
+        offerToReceiveVideo: 1,
       },
       localVideo: {
         autoplay: true,
         mirror: false,
-        muted: true
-      }
+        muted: true,
+      },
     };
 
     let connection;
     this.logger = ((() => {
-          // we assume that if you're in debug mode and you didn't
-          // pass in a logger, you actually want to log as much as
-          // possible.
+      // we assume that if you're in debug mode and you didn't
+      // pass in a logger, you actually want to log as much as
+      // possible.
       if (opts.debug) {
         return opts.logger || console;
       }
       return opts.logger || mockconsole;
     })());
 
-      // set our config from options
-    Object.keys(options).forEach(o => {
+    // set our config from options
+    Object.keys(options).forEach((o) => {
       this.config[o] = options[o];
     });
 
@@ -61,13 +61,13 @@ class LioWebRTC extends WildEmitter {
       this.config.receiveMedia.offerToReceiveVideo = false;
     }
 
-      // attach detected support for convenience
+    // attach detected support for convenience
     this.capabilities = webrtcSupport;
 
-      // call WildEmitter constructor
+    // call WildEmitter constructor
     WildEmitter.call(this);
 
-      // create default SocketIoConnection if it's not passed in
+    // create default SocketIoConnection if it's not passed in
     if (this.config.connection === null) {
       connection = this.connection = new SocketIoConnection(this.config);
     } else {
@@ -89,7 +89,7 @@ class LioWebRTC extends WildEmitter {
           peers.forEach((p) => {
             if (p.sid === message.sid) peer = p;
           });
-                  // if (!peer) peer = peers[0]; // fallback for old protocol versions
+          // if (!peer) peer = peers[0]; // fallback for old protocol versions
         }
         if (!peer) {
           peer = self.webrtc.createPeer({
@@ -98,19 +98,19 @@ class LioWebRTC extends WildEmitter {
             type: message.roomType,
             enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
             sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
-            broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null
+            broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null,
           });
           self.emit('createdPeer', peer);
         }
         peer.handleMessage(message);
       } else if (peers.length) {
-        peers.forEach((peer) => {
+        peers.forEach((p) => {
           if (message.sid) {
-            if (peer.sid === message.sid) {
-              peer.handleMessage(message);
+            if (p.sid === message.sid) {
+              p.handleMessage(message);
             }
           } else {
-            peer.handleMessage(message);
+            p.handleMessage(message);
           }
         });
       }
@@ -122,28 +122,28 @@ class LioWebRTC extends WildEmitter {
       }
     });
 
-      // instantiate our main WebRTC helper
-      // using same logger from logic here
+    // instantiate our main WebRTC helper
+    // using same logger from logic here
     opts.logger = this.logger;
     opts.debug = false;
     this.webrtc = new WebRTC(opts);
 
-      // attach a few methods from underlying lib to liowebrtc.
+    // attach a few methods from underlying lib to liowebrtc.
     ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers', 'shout', 'whisper'].forEach((method) => {
       self[method] = self.webrtc[method].bind(self.webrtc);
     });
 
-      // proxy events from WebRTC
-    this.webrtc.on('*', function () {
+    // proxy events from WebRTC
+    this.webrtc.on('*', () => {
       self.emit(...arguments);
     });
 
-      // log all events in debug mode
+    // log all events in debug mode
     if (config.debug) {
       this.on('*', this.logger.log.bind(this.logger, 'LioWebRTC event:'));
     }
 
-      // check for readiness
+    // check for readiness
     this.webrtc.on('localStream', () => {
       self.testReadiness();
     });
@@ -155,32 +155,32 @@ class LioWebRTC extends WildEmitter {
     this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
     this.webrtc.on('peerStreamRemoved', this.handlePeerStreamRemoved.bind(this));
 
-      // echo cancellation attempts
+    // echo cancellation attempts
     if (this.config.adjustPeerVolume) {
       this.webrtc.on('speaking', this.setVolumeForAll.bind(this, this.config.peerVolumeWhenSpeaking));
       this.webrtc.on('stoppedSpeaking', this.setVolumeForAll.bind(this, 1));
     }
 
     connection.on('stunservers', (args) => {
-          // resets/overrides the config
+      // resets/overrides the config
       self.webrtc.config.peerConnectionConfig.iceServers = args;
       self.emit('stunservers', args);
     });
     connection.on('turnservers', (args) => {
-          // appends to the config
+      // appends to the config
       self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
       self.emit('turnservers', args);
     });
 
     this.webrtc.on('iceFailed', (peer) => {
-          // local ice failure
+
     });
     this.webrtc.on('connectivityError', (peer) => {
-          // remote ice failure
+      // remote ice failure
     });
 
 
-      // sending mute/unmute to all peers
+    // sending mute/unmute to all peers
     this.webrtc.on('audioOn', () => {
       self.webrtc.sendToAll('unmute', { name: 'audio' });
     });
@@ -194,11 +194,11 @@ class LioWebRTC extends WildEmitter {
       self.webrtc.sendToAll('mute', { name: 'video' });
     });
 
-      // screensharing events
+    // screensharing events
     this.webrtc.on('localScreen', (stream) => {
       let item;
-      let el = document.createElement('video');
-      let container = self.getRemoteVideoContainer();
+      const el = document.createElement('video');
+      const container = self.getRemoteVideoContainer();
 
       el.oncontextmenu = () => false;
       el.id = 'localScreen';
@@ -220,7 +220,7 @@ class LioWebRTC extends WildEmitter {
             enableDataChannels: false,
             receiveMedia: {
               offerToReceiveAudio: 0,
-              offerToReceiveVideo: 0
+              offerToReceiveVideo: 0,
             },
             broadcaster: self.connection.getSessionid(),
           });
@@ -233,7 +233,7 @@ class LioWebRTC extends WildEmitter {
       if (self.getLocalScreen()) {
         self.stopScreenShare();
       }
-          /*
+      /*
           self.connection.emit('unshareScreen');
           self.webrtc.peers.forEach(function (peer) {
               if (peer.sharemyscreen) {
@@ -278,10 +278,10 @@ class LioWebRTC extends WildEmitter {
 
     this.emit('videoAdded', peer.stream, peer);
 
-      // send our mute status to new peer if we're muted
-      // currently called with a small delay because it arrives before
-      // the video element is created otherwise (which happens after
-      // the async setRemoteDescription-createAnswer)
+    // send our mute status to new peer if we're muted
+    // currently called with a small delay because it arrives before
+    // the video element is created otherwise (which happens after
+    // the async setRemoteDescription-createAnswer)
     setTimeout(() => {
       if (!self.webrtc.isAudioEnabled()) {
         peer.send('mute', { name: 'audio' });
@@ -296,8 +296,12 @@ class LioWebRTC extends WildEmitter {
     this.emit('videoRemoved', peer);
   }
 
-  getDomId(peer) {
+  getId(peer) {
     return [peer.id, peer.type, peer.broadcaster ? 'broadcasting' : 'incoming'].join('_');
+  }
+
+  getContainerId(peer) {
+    return `container_${this.getId(peer)}`;
   }
 
   // set volume on video tag for all peers takse a value between 0 and 1
@@ -319,18 +323,18 @@ class LioWebRTC extends WildEmitter {
         let type;
         let peer;
 
-        for (id in roomDescription.clients) {
+        for (const i of Object.keys(roomDescription.clients)) {
           client = roomDescription.clients[id];
-          for (type in client) {
+          for (const t of Object.keys(client)) {
             if (client[type]) {
               peer = self.webrtc.createPeer({
-                id,
-                type,
+                id: i,
+                type: t,
                 enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                 receiveMedia: {
                   offerToReceiveAudio: type !== 'screen' && !self.config.dataOnly && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
-                  offerToReceiveVideo: !self.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo
-                }
+                  offerToReceiveVideo: !self.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo,
+                },
               });
               self.emit('createdPeer', peer);
               peer.start();
@@ -355,6 +359,10 @@ class LioWebRTC extends WildEmitter {
     });
   }
 
+  attachStream(stream, el) {
+    attachMediaStream(stream, el);
+  }
+
   stopLocalVideo() {
     this.webrtc.stop();
   }
@@ -376,8 +384,8 @@ class LioWebRTC extends WildEmitter {
       container.removeChild(videoEl);
     }
 
-      // a hack to emit the event the removes the video
-      // element that we want
+    // a hack to emit the event the removes the video
+    // element that we want
     if (videoEl) {
       this.emit('videoRemoved', videoEl);
     }
