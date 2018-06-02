@@ -64,9 +64,6 @@ class LioWebRTC extends WildEmitter {
     // attach detected support for convenience
     this.capabilities = webrtcSupport;
 
-    // call WildEmitter constructor
-    WildEmitter.call(this);
-
     // create default SocketIoConnection if it's not passed in
     if (this.config.connection === null) {
       connection = this.connection = new SocketIoConnection(this.config);
