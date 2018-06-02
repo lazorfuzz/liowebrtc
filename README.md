@@ -234,6 +234,7 @@ export default Party;
 - `object options`
   - `string url` - url for your socket.io signaling server.
   - `bool debug` - *optional* logs all webrtc events 
+  - `string nick` - *optional* sets your nickname. Peers' nicknames can be accessed with `peer.nick`
   - `[string|DomElement|Ref] localVideoEl` - Can be a ref, DOM element, or ID of the local video
   - `bool autoRequestMedia` - *optional(=true)* automatically request
   user media. Use `true` to request automatically, or `false` to request media
