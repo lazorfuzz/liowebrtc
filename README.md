@@ -24,8 +24,8 @@ import LioWebRTC from 'liowebrtc';
 By default, this enables video, audio, and data channels.
 ```js
 const webrtc = new LioWebRTC({
-    // The local video ref set within your render function, or the element's ID
-    localVideoEl: this.localVideo,
+    // The local video ref set within your render function, or the element's id
+    localVideoEl: localVideoIdOrRef,
     // Immediately request camera and mic access.
     autoRequestMedia: true,
     // Displays events emitted by the webrtc object in the console.
@@ -36,19 +36,17 @@ const webrtc = new LioWebRTC({
 ```
 
 ### Data channels only
-Disable webcam/mic streaming, and only enable data channel.
+Disable webcam/mic streaming, and only allow data channels.
 ```js
 const webrtc = new LioWebRTC({
-    url: 'https://sandbox.simplewebrtc.com:443/',
     dataOnly: true
 });
 ```
 
 ### Audio and data channels only
-Great for voice chatting.
+Great for voice calls.
 ```js
 const webrtc = new LioWebRTC({
-    url: 'https://sandbox.simplewebrtc.com:443/',
     autoRequestMedia: true,
     media: {
         video: false,
@@ -108,6 +106,15 @@ this.webrtc.on('receivedPeerData', (type, state, peer) => {
 ```
 
 All communications via shout/whisper are sent over the default data channel and emitted by the LioWebRTC instance as events. You can create your own custom listeners suited for whatever purpose you'd like.
+
+### Attaching a peer's media stream to a video element
+```js
+webrtc.on('videoAdded', (stream, peer) => {
+    webrtc.attachStream(stream, yourVideoElementOrRef);
+});
+```
+
+### 
 
 ## Example
 
@@ -175,7 +182,7 @@ class Party extends Component {
   }
   
   // Show fellow peers in the room
-  generateRemotes = () => this.state.peers.map((p) => (
+  generateRemotes = () => this.webrtc.getPeers().map((p) => (
     <div key={p.id}>
       // The video parent container needs a special id
       <div id={`${this.webrtc.getContainerId(p)}`}>
@@ -230,7 +237,7 @@ export default Party;
 `new LioWebRTC(options)`
 
 - `object options`
-  - `string url` - url for your socket.io signaling server.
+  - `string url` - *optional* url for your socket.io signaling server
   - `bool debug` - *optional* logs all webrtc events 
   - `string nick` - *optional* sets your nickname. Peers' nicknames can be accessed with `peer.nick`
   - `[string|DomElement|Ref] localVideoEl` - Can be a ref, DOM element, or ID of the local video
@@ -244,7 +251,7 @@ export default Party;
   - `bool adjustPeerVolume` - *optional(=true)* option to reduce peer volume
   when the local participant is speaking
   - `number peerVolumeWhenSpeaking` - *optional(=.0.25)* value used in
-  conjunction with `adjustPeerVolume`. Uses values between 0 and 1.
+  conjunction with `adjustPeerVolume`. Uses values between 0 and 1
   - `object media` - media options to be passed to `getUserMedia`. Defaults to
   `{ video: true, audio: true }`. Valid configurations described
   [on MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
@@ -257,7 +264,7 @@ export default Party;
   ```javascript
   {
       autoplay: true, // automatically play the video stream on the page
-      mirror: true, // flip the local video to mirror mode (for UX)
+      mirror: false, // flip the local video to mirror mode (for UX)
       muted: true // mute local video stream to prevent echo
   }
   ```
@@ -301,7 +308,6 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 `'turnservers', [...args]` - emitted when the signaling server emits this event.
 
 `'localScreenAdded', el` - emitted after triggering the start of screen sharing
-
 - `el` the element that contains the local screen stream
 
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
