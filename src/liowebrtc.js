@@ -134,7 +134,7 @@ class LioWebRTC extends WildEmitter {
     });
 
     // proxy events from WebRTC
-    this.webrtc.on('*', () => {
+    this.webrtc.on('*', function () {
       self.emit(...arguments);
     });
 
@@ -173,7 +173,7 @@ class LioWebRTC extends WildEmitter {
     });
 
     this.webrtc.on('iceFailed', (peer) => {
-
+      // local ice failure
     });
     this.webrtc.on('connectivityError', (peer) => {
       // remote ice failure
@@ -397,6 +397,10 @@ class LioWebRTC extends WildEmitter {
         peer.end();
       }
     });
+  }
+
+  attachStream(stream, el) {
+    attachMediaStream(stream, el);
   }
 
   testReadiness() {

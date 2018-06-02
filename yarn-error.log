@@ -1520,6 +1520,7 @@ Lockfile:
     version "1.3.48"
     resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.48.tgz#d3b0d8593814044e092ece2108fc3ac9aea4b900"
   
+<<<<<<< HEAD
   emoji-regex@^6.1.0:
     version "6.5.1"
     resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-6.5.1.tgz#9baea929b155565c11ea41c6626eaa65cef992c2"
@@ -1530,6 +1531,8 @@ Lockfile:
     dependencies:
       iconv-lite "~0.4.13"
   
+=======
+>>>>>>> emit-fix
   engine.io-client@1.5.4:
     version "1.5.4"
     resolved "https://registry.yarnpkg.com/engine.io-client/-/engine.io-client-1.5.4.tgz#c6ad65a65752a29cb930c6911e579d2b28d1106c"

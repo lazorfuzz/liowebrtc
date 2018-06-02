@@ -106,50 +106,39 @@ class Peer extends WildEmitter {
     this.logger.log('getting', message.type, message);
     if (message.prefix) this.browserPrefix = message.prefix;
 
-    switch (message.type) {
-      case 'offer':
-        if (!this.nick) this.nick = message.payload.nick;
-        delete message.payload.nick;
-        this.pc.handleOffer(message.payload, (err) => {
-          if (!err) {
-            self.pc.answer((err, sessionDescription) => {
-              // self.send('answer', sessionDescription);
-            });
-          }
+    if (message.type === 'offer') {
+      if (!this.nick) this.nick = message.payload.nick;
+      delete message.payload.nick;
+      this.pc.handleOffer(message.payload, (err) => {
+        if (err) {
+          return;
+        }
+        // auto-accept
+        self.pc.answer((err, sessionDescription) => {
+          // self.send('answer', sessionDescription);
         });
-        break;
-      case 'answer':
-        if (!this.nick) this.nick = message.payload.nick;
-        delete message.payload.nick;
-        this.pc.handleAnswer(message.payload);
-        break;
-      case 'candidate':
-        this.pc.processIce(message.payload);
-        break;
-      case 'connectivityError':
-        this.parent.emit('connectivityError', self);
-        break;
-      case 'mute':
-        this.parent.emit('mute', {
-          id: message.from,
-          name: message.payload.name,
-        });
-        break;
-      case 'unmute':
-        this.parent.emit('unmute', { id: message.from, name: message.payload.name });
-        break;
-      case 'endOfCandidates':
-        // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
-        // shim this will only be called in Edge.
-        const mLines = this.pc.pc.transceivers || [];
-        mLines.forEach((mLine) => {
-          if (mLine.iceTransport) {
-            mLine.iceTransport.addRemoteCandidate({});
-          }
-        });
-        break;
-      default:
-        break;
+      });
+    } else if (message.type === 'answer') {
+      if (!this.nick) this.nick = message.payload.nick;
+      delete message.payload.nick;
+      this.pc.handleAnswer(message.payload);
+    } else if (message.type === 'candidate') {
+      this.pc.processIce(message.payload);
+    } else if (message.type === 'connectivityError') {
+      this.parent.emit('connectivityError', self);
+    } else if (message.type === 'mute') {
+      this.parent.emit('mute', { id: message.from, name: message.payload.name });
+    } else if (message.type === 'unmute') {
+      this.parent.emit('unmute', { id: message.from, name: message.payload.name });
+    } else if (message.type === 'endOfCandidates') {
+      // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
+      // shim this will only be called in Edge.
+      const mLines = this.pc.pc.transceivers || [];
+      mLines.forEach((mLine) => {
+        if (mLine.iceTransport) {
+          mLine.iceTransport.addRemoteCandidate({});
+        }
+      });
     }
   }
 
