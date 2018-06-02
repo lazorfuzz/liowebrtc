@@ -21,17 +21,15 @@ import LioWebRTC from 'liowebrtc';
 ```
 
 ### Create LioWebRTC instance
-
+By default, this enables video, audio, and data channels.
 ```js
 const webrtc = new LioWebRTC({
-    // The local video reference set within your render function, or the element's ID
+    // The local video ref set within your render function, or the element's ID
     localVideoEl: 'localVid',
     // Immediately request camera and mic access.
     autoRequestMedia: true,
     // Displays events emitted by the webrtc object in the console.
     debug: true,
-    // Set this to true if you want to disable video/audio channels, and only enable data channel.
-    dataOnly: false,
     // The url for your signaling server
     url: 'https://sandbox.simplewebrtc.com:443/',
 });
@@ -89,6 +87,28 @@ this.webrtc.on('receivedPeerData', (type, state, peer) => {
 
 All communications via shout/whisper are sent over the default data channel and emitted by the LioWebRTC instance as events. You can create your own custom listeners suited for whatever purpose you'd like.
 
+### Data channels only
+Disable webcam/mic streaming, and only enable data channel.
+```js
+const webrtc = new LioWebRTC({
+    // The url for your signaling server
+    url: 'https://sandbox.simplewebrtc.com:443/',
+    dataOnly: true
+});
+```
+### Audio and data channels only
+Great for voice chatting.
+```js
+const webrtc = new LioWebRTC({
+    // The url for your signaling server
+    url: 'https://sandbox.simplewebrtc.com:443/',
+    autoRequestMedia: true,
+    media: {
+        video: false,
+        audio: true
+    }
+});
+```
 
 ## Example
 
@@ -212,17 +232,14 @@ export default Party;
 `new LioWebRTC(options)`
 
 - `object options`
-  - `string url` - url for signaling server.
-  - `bool debug` - *optional* flag to set the instance to debug mode
-  - `[string|DomElement] localVideoEl` - ID or Element to contain the local video
-  element
-  - `bool autoRequestMedia` - *optional(=true)* option to automatically request
+  - `string url` - url for your socket.io signaling server.
+  - `bool debug` - *optional* logs all webrtc events 
+  - `[string|DomElement|Ref] localVideoEl` - Can be a ref, DOM element, or ID of the local video
+  - `bool autoRequestMedia` - *optional(=true)* automatically request
   user media. Use `true` to request automatically, or `false` to request media
   later with `startLocalVideo`
   - `bool dataOnly` *optional(=false)* option to ensure that video and audio stream channels
   are turned off
-  - `bool enableDataChannels` *optional(=true)* option to enable/disable data
-  channels (used for volume levels or direct messaging)
   - `bool autoRemoveVideos` - *optional(=true)* option to automatically remove
   video elements when streams are stopped.
   - `bool adjustPeerVolume` - *optional(=true)* option to reduce peer volume
@@ -266,7 +283,7 @@ To set up event listeners, use the LioWebRTC instance created with the
 constructor. Example:
 
 ```js
-webrtc.on('connectionReady', (sessionId) => {
+this.webrtc.on('receivedPeerData', (type, payload, peer) => {
     // ...
 })
 ```
@@ -275,20 +292,20 @@ webrtc.on('connectionReady', (sessionId) => {
 `connect` event, with the unique id for the session.
 
 `'receivedPeerData', type, payload, peer` - emitted when a peer sends data via `shout` or `whisper`
+- `type` a label, usually a string, that describes the payload
+- `payload` any kind of data sent by the peer, usually an object
+- `peer` the object representing the peer and its peer connection
 
-`'createdPeer', peer` - emitted three times:
+`'createdPeer', peer` - this will be emitted when:
+- joining a room with existing peers, once for each peer
+- a new peer joins a joined room
+- sharing screen, once for each peer
 
-- when joining a room with existing peers, once for each peer
-- when a new peer joins a joined room
-- when sharing screen, once for each peer
+- `peer` - the object representing the peer and its peer connection
 
-- `peer` - the object representing the peer and underlying peer connection
+`'stunservers', [...args]` - emitted when the signaling server emits this event.
 
-`'stunservers', [...args]` - emitted when the signaling connection emits the
-same event
-
-`'turnservers', [...args]` - emitted when the signaling connection emits the
-same event
+`'turnservers', [...args]` - emitted when the signaling server emits this event.
 
 `'localScreenAdded', el` - emitted after triggering the start of screen sharing
 
@@ -309,57 +326,52 @@ ending all peers, and stopping the local screen stream
 
 ### Methods
 
-`createRoom(name, callback)` - emits the `create` event on the connection with
-`name` and (if provided) invokes `callback` on response
+`createRoom(name, callback)` - emits the `create` event and optionally invokes `callback` on response
 
-`joinRoom(name, callback)` - joins the conference in room `name`. Callback is
+`joinRoom(name, callback)` - joins the room `name`. Callback is
 invoked with `callback(err, roomDescription)` where `roomDescription` is yielded
-by the connection on the `join` event. See [signalmaster](https://github.com/andyet/signalmaster) for more details.
+by the connection on the `join` event. See [signalmaster](https://github.com/andyet/signalmaster) for details about rooms.
 
-`startLocalVideo()` - starts the local media with the `media` options provided
-in the config passed to the constructor
+`startLocalVideo()` - starts the local video or audio streams with the `media` options provided
+in the config
 
-`testReadiness()` - tests that the connection is ready and that (if media is
-enabled) streams have started
+`mute()` - mutes the local audio stream to your peers (stops sending audio in the WebRTC audio channel)
 
-`mute()` - mutes the local audio stream for all peers (pauses sending audio)
+`unmute()` - unmutes the audio stream to your peers (resumes sending audio in the WebRTC audio channel)
 
-`unmute()` - unmutes local audio stream for all peers (resumes sending audio)
+`pauseVideo()` - pauses the video stream to your peers (stops sending video in the WebRTC video channel)
 
-`pauseVideo()` - pauses sending video to peers
+`resumeVideo()` - resumes the video stream to your peers (resumes sending video in the WebRTC video channel)
 
-`resumeVideo()` - resumes sending video to all peers
+`pause()` - pauses both video and audio streams to your peers
 
-`pause()` - pauses sending audio and video to all peers
-
-`resume()` - resumes sending audio and video to all peers
+`resume()` - resumes sending video and audio to your peers
 
 `sendToAll(messageType, payload)` - broadcasts a message to all peers in the
-room via the signaling channel (websocket)
+room via the signaling server
 
-- `string messageLabel` - The event label that be broadcasted via the signaling server
+- `string messageType` - The event label that be broadcasted via the signaling server
 - `object payload` - an arbitrary value or object to send to peers
 
 `sendDirectlyToAll(messageType, payload, channel)` - broadcasts a message
-to all peers in the room via a dataChannel
+to all peers in the room via a data channel
 
 - `string messageType` - the event label that peers will listen for
-- `object payload` - an arbitrary value or object to send to peers
-- `string channel` - (optional) the label for the dataChannel to send on
+- `object payload` - an arbitrary value or object
+- `string channel` - (optional) the name of the data channel
 
 `shout(messageType, payload)` - broadcasts a message
 to all peers in the room via the default data channel
 - `string messageType` - A value that represents the classification of the payload
 - `object payload` - an arbitrary value or object to send to peers
 
-`whisper(peer, messageType, payload)` - sends a message to a single peer in the room
+`whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default data channel
 - `string messageType` - A value that represents the classification of the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
 
-`shareScreen(callback)` - initiates screen capture request to browser, then
-adds the stream to the conference
+`shareScreen(callback)` - initiates screen capture request to browser, then streams the video to peers in the room
 
 `getLocalScreen()` - returns the local screen stream
 
@@ -381,16 +393,8 @@ DOM and perform other setup
 `handlePeerStreamRemoved(peer)` - used internally to remove the video container
 from the DOM and emit `videoRemoved`
 
-`getDomId(peer)` - used internally to get the DOM id associated with a peer
+`getDomId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the ID of the peer's video element to this value.
 
-`getEl(idOrEl)` - helper used internally to get an element where `idOrEl` is
-either an element, or an id of an element
-
-`getLocalVideoContainer()` - used internally to get the container that will hold
-the local video element
-
-`getRemoteVideoContainer()` - used internally to get the container that holds
-the remote video elements
 
 
 
@@ -399,14 +403,17 @@ the remote video elements
 ### Connection
 
 For signaling, LioWebRTC uses [socket.io](http://socket.io/) to
-communicate with the signaling server. The connection object comes with these methods:
+communicate with the signaling server, and returns a connection object. The connection object comes with the following methods:
 
-- `on(ev, fn)` - A method to invoke `fn` when event `ev` is triggered
-- `emit()` - A method to send/emit arbitrary arguments on the connection
-- `getSessionId()` - A method to get a unique session Id for the connection
-- `disconnect()` - A method to disconnect the connection
+- `on(ev, fn)` - a method to set a listener
+- `emit()` - send/emit arbitrary events on the connection
+- `getSessionId()` - returns the session ID of the connection
+- `disconnect()` - disconnect from the signaling server (closes the websocket)
 
 ### Signaling Server
 
 LioWebRTC uses the signaling server provided for testing purposes by SimpleWebRTC.
-You will need to set up your own [signalmaster](https://github.com/andyet/signalmaster) server, and pass in your server's url when creating a new instance of LioWebRTC. 
+In production, you will need to set up your own [signalmaster](https://github.com/andyet/signalmaster) server, and pass in your server's url when creating an instance of LioWebRTC. To start your signalmaster server in production mode using PM2, do the following:
+```
+NODE_ENV=production pm2 start signalmaster
+```
