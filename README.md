@@ -116,7 +116,6 @@ const webrtc = new LioWebRTC({
 ```jsx
 import React, { Component } from 'react';
 import LioWebRTC from 'liowebrtc';
-import 'attachMediaStream' from 'attachmediastream';
 
 class Party extends Component {
   constructor(props) {
@@ -154,7 +153,7 @@ class Party extends Component {
     this.setState({
       peers: [...this.state.peers, peer]
     }, () => {
-      attachMediaStream(stream, this.remoteVideos[peer.id]);
+      this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
     });
   }
   
@@ -179,11 +178,12 @@ class Party extends Component {
   // Show fellow peers in the room
   generateRemotes = () => this.state.peers.map((p) => (
     <div key={p.id}>
-      <div id={`container_${this.webrtc.getDomId(p)}`}>
+      // The video parent container needs a special id
+      <div id={`${this.webrtc.getContainerId(p)}`}>
         <video
-          key={this.webrtc.getDomId(p)}
+          key={this.webrtc.getId(p)}
           // Important: The video element needs both an id and ref
-          id={this.webrtc.getDomId(p)}
+          id={this.webrtc.getId(p)}
           ref={(v) => this.remoteVideos[p.id] = v}
           />
       </div>
@@ -206,8 +206,7 @@ class Party extends Component {
       <div>
         <div>
             <video
-              // Important: The local video element needs to have both an ID and ref
-              id="localVideo"
+              // Important: The local video element needs to have a ref
               ref={(vid) => { this.localVid = vid; }}
             />
             <p>{this.state.nick}</p>
@@ -315,14 +314,11 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
 ending all peers, and stopping the local screen stream
 
-`'videoAdded', videoEl, peer` - emitted when a peer stream is added
-
-- `videoEl` - the video element associated with the stream that was added
+`'videoAdded', stream, peer` - emitted when a peer stream is added
+- `stream` - the MediaStream associated with the peer
 - `peer` - the peer associated with the stream that was added
 
-`'videoRemoved', videoEl, peer` - emitted when a peer stream is removed
-
-- `videoEl` - the video element associated with the stream that was removed
+`'videoRemoved', peer` - emitted when a peer stream is removed
 - `peer` - the peer associated with the stream that was removed
 
 ### Methods
@@ -348,6 +344,15 @@ in the config
 
 `resume()` - resumes sending video and audio to your peers
 
+`shout(messageType, payload)` - broadcasts a message
+to all peers in the room via the default data channel
+- `string messageType` - A value that represents the classification of the payload
+- `object payload` - an arbitrary value or object to send to peers
+
+`whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default data channel
+- `string messageType` - A value that represents the classification of the payload
+- `object payload` - an arbitrary value or object to send to peers
+
 `sendToAll(messageType, payload)` - broadcasts a message to all peers in the
 room via the signaling server
 
@@ -361,16 +366,11 @@ to all peers in the room via a data channel
 - `object payload` - an arbitrary value or object
 - `string channel` - (optional) the name of the data channel
 
-`shout(messageType, payload)` - broadcasts a message
-to all peers in the room via the default data channel
-- `string messageType` - A value that represents the classification of the payload
-- `object payload` - an arbitrary value or object to send to peers
-
-`whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default data channel
-- `string messageType` - A value that represents the classification of the payload
-- `object payload` - an arbitrary value or object to send to peers
-
 `getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
+
+`attachStream(stream, el)` - attaches a media stream to a video or audio element.
+- `MediaStream stream` - an object representing a media stream
+- `HTMLElement el` - the element (or ref if you're using React) to attach the media stream to
 
 `shareScreen(callback)` - initiates screen capture request to browser, then streams the video to peers in the room
 
@@ -394,7 +394,9 @@ DOM and perform other setup
 `handlePeerStreamRemoved(peer)` - used internally to remove the video container
 from the DOM and emit `videoRemoved`
 
-`getDomId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the ID of the peer's video element to this value.
+`getId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
+
+`getContainerId(peer)` - get the DOM id associated with a peer's media element. In JSX, you will need to set the id of the container element to this value.
 
 
 
