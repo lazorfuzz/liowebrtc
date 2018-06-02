@@ -25,7 +25,7 @@ By default, this enables video, audio, and data channels.
 ```js
 const webrtc = new LioWebRTC({
     // The local video ref set within your render function, or the element's ID
-    localVideoEl: 'localVid',
+    localVideoEl: this.localVideo,
     // Immediately request camera and mic access.
     autoRequestMedia: true,
     // Displays events emitted by the webrtc object in the console.
@@ -35,11 +35,33 @@ const webrtc = new LioWebRTC({
 });
 ```
 
+### Data channels only
+Disable webcam/mic streaming, and only enable data channel.
+```js
+const webrtc = new LioWebRTC({
+    url: 'https://sandbox.simplewebrtc.com:443/',
+    dataOnly: true
+});
+```
+
+### Audio and data channels only
+Great for voice chatting.
+```js
+const webrtc = new LioWebRTC({
+    url: 'https://sandbox.simplewebrtc.com:443/',
+    autoRequestMedia: true,
+    media: {
+        video: false,
+        audio: true
+    }
+});
+```
+
 ### Join a room once it's ready
 
 ```js
 webrtc.on('readyToCall', () => {
-    // Create or join a room with any name
+    // Joins a room if it exists, creates it if it doesn't
     webrtc.joinRoom('your room name');
 });
 ```
@@ -86,29 +108,6 @@ this.webrtc.on('receivedPeerData', (type, state, peer) => {
 ```
 
 All communications via shout/whisper are sent over the default data channel and emitted by the LioWebRTC instance as events. You can create your own custom listeners suited for whatever purpose you'd like.
-
-### Data channels only
-Disable webcam/mic streaming, and only enable data channel.
-```js
-const webrtc = new LioWebRTC({
-    // The url for your signaling server
-    url: 'https://sandbox.simplewebrtc.com:443/',
-    dataOnly: true
-});
-```
-### Audio and data channels only
-Great for voice chatting.
-```js
-const webrtc = new LioWebRTC({
-    // The url for your signaling server
-    url: 'https://sandbox.simplewebrtc.com:443/',
-    autoRequestMedia: true,
-    media: {
-        video: false,
-        audio: true
-    }
-});
-```
 
 ## Example
 
@@ -267,13 +266,7 @@ export default Party;
 
 ### Fields
 
-`capabilities` - the webrtcsupport module that returns an object that
-describes browser capabilities.
-
-`config` - the configuration options extended from options passed to the
-constructor
-
-`connection` - the socket (or alternate) signaling connection
+`connection` - the socket signaling connection
 
 `webrtc` - the underlying WebRTC session manager
 
@@ -298,7 +291,7 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 
 `'createdPeer', peer` - this will be emitted when:
 - joining a room with existing peers, once for each peer
-- a new peer joins a joined room
+- a new peer joins your room
 - sharing screen, once for each peer
 
 - `peer` - the object representing the peer and its peer connection
@@ -388,17 +381,9 @@ to all peers in the room via a data channel
 
 `disconnect()` - calls `disconnect` on the signaling connection and deletes it
 
-`handlePeerStreamAdded(peer)` - used internally to attach media stream to the
-DOM and perform other setup
-
-`handlePeerStreamRemoved(peer)` - used internally to remove the video container
-from the DOM and emit `videoRemoved`
-
 `getId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
 
 `getContainerId(peer)` - get the DOM id associated with a peer's media element. In JSX, you will need to set the id of the container element to this value.
-
-
 
 
 ## Signaling
