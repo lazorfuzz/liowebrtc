@@ -142,12 +142,16 @@ class WebRTC extends LocalMedia {
     });
   }
 
-  shout(messageLabel, payload) {
-    this.sendDirectlyToAll(messageLabel, payload, 'liowebrtc');
+  shout(messageType, payload) {
+    this.sendDirectlyToAll(messageType, payload, 'liowebrtc');
   }
 
-  whisper(peer, messageLabel, payload) {
-    peer.sendDirectly(messageLabel, payload);
+  whisper(peer, messageType, payload) {
+    peer.sendDirectly(messageType, payload);
+  }
+
+  broadcast(messageType, payload) {
+    this.sendToAll('signalData', { type: messageType, payload });
   }
 }
 

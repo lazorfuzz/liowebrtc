@@ -65,7 +65,7 @@ webrtc.on('readyToCall', () => {
 ```
 
 ### Emitting to the hive
-Sometimes a peer wants to let every other peer in the room to know about something. This can be accomplished with 
+Sometimes a peer wants to let every other peer in the room to know about something. This can be accomplished with
 ```shout(messageType, payload)```
 ```js
 webrtc.shout('taskCompleted', { success: true, id: '137' });
@@ -80,7 +80,7 @@ webrtc.on('receivedPeerData', (type, data, peer) => {
 ```
 
 ### Communicating with a single peer
-Sometimes a peer only wants to send data directly to another peer. This can be accomplished with 
+Sometimes a peer only wants to send data directly to another peer. This can be accomplished with
 ```whisper(peer, messageType, payload)```
 ```js
 webrtc.whisper(peer, 'directMessage', { msg: 'Hello world!' });
@@ -114,7 +114,7 @@ webrtc.on('videoAdded', (stream, peer) => {
 });
 ```
 
-### 
+###
 
 ## Example
 
@@ -154,7 +154,7 @@ class Party extends Component {
     this.webrtc.on('iceFailed', this.handleConnectionError);
     this.webrtc.on('connectivityError', this.handleConnectionError);
   }
-  
+
   addVideo = (stream, peer) => {
     this.setState({
       peers: [...this.state.peers, peer]
@@ -162,25 +162,25 @@ class Party extends Component {
       this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
     });
   }
-  
+
   removeVideo = (video, peer) => {
     this.setState({
       peers: this.state.peers.filter(p => p.id)
     });
   }
-  
+
   handleConnectionError = (peer) => {
     const pc = peer.pc;
     console.log('had local relay candidate', pc.hadLocalRelayCandidate);
     console.log('had remote relay candidate', pc.hadRemoteRelayCandidate);
   }
-  
+
   readyToCall = () => {
     // Starts the process of joining a room.
     this.webrtc.joinRoom(this.state.roomID, (err, desc) => {
     });
   }
-  
+
   // Show fellow peers in the room
   generateRemotes = () => this.webrtc.getPeers().map((p) => (
     <div key={p.id}>
@@ -196,7 +196,7 @@ class Party extends Component {
         <p>{p.nick}</p>
     </div>
     ));
-  
+
   disconnect = () => {
     this.webrtc.stopLocalVideo();
     this.webrtc.leaveRoom();
@@ -206,7 +206,7 @@ class Party extends Component {
   componentWillUnmount() {
     this.disconnect();
   }
-  
+
   render() {
     return (
       <div>
@@ -227,7 +227,7 @@ class Party extends Component {
 }
 
 export default Party;
-  
+
 ```
 
 ## API
@@ -238,7 +238,7 @@ export default Party;
 
 - `object options`
   - `string url` - *optional* url for your socket.io signaling server
-  - `bool debug` - *optional* logs all webrtc events 
+  - `bool debug` - *optional* logs all webrtc events
   - `string nick` - *optional* sets your nickname. Peers' nicknames can be accessed with `peer.nick`
   - `[string|DomElement|Ref] localVideoEl` - Can be a ref, DOM element, or ID of the local video
   - `bool autoRequestMedia` - *optional(=true)* automatically request
@@ -296,6 +296,11 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 - `payload` any kind of data sent by the peer, usually an object
 - `peer` the object representing the peer and its peer connection
 
+`'receivedSignalData', type, payload, peer` - emitted when a peer sends data via `broadcast`
+- `type` a label, usually a string, that describes the payload
+- `payload` any kind of data sent by the peer, usually an object
+- `peer` the object representing the peer and its peer connection
+
 `'createdPeer', peer` - this will be emitted when:
 - joining a room with existing peers, once for each peer
 - a new peer joins your room
@@ -343,26 +348,20 @@ in the config
 
 `resume()` - resumes sending video and audio to your peers
 
-`shout(messageType, payload)` - broadcasts a message
+`shout(messageType, payload)` - sends a message
 to all peers in the room via the default data channel
-- `string messageType` - A value that represents the classification of the payload
+- `string messageType` - An arbitrary value that represents the classification of the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default data channel
-- `string messageType` - A value that represents the classification of the payload
+- `string messageType` - An arbitrary value that represents the classification of the payload
 - `object payload` - an arbitrary value or object to send to peers
 
-`sendToAll(messageType, payload)` - broadcasts a message to all peers in the
-room via the signaling server
+`broadcast(messageType, payload)` - broadcasts a message to all peers in the
+room via the signaling server (similar to `shout`, but not p2p)
 
-- `string messageType` - The event label that be broadcasted via the signaling server
-- `object payload` - an arbitrary value or object to send to peers
-
-`sendDirectlyToAll(messageType, payload, channel)` - broadcasts a message
-to all peers in the room via a data channel
-
-- `string messageType` - the event label that peers will listen for
-- `object payload` - an arbitrary value or object
+`sendDirectlyToAll(messageType, payload, channel)` - sends a message
+to all peers in the room via a data channel (same as `shout`, except you can specify your own data channel. Use this if you need to set up a new data channel)
 - `string channel` - (optional) the name of the data channel
 
 `getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`

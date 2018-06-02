@@ -139,10 +139,12 @@ class Peer extends WildEmitter {
           mLine.iceTransport.addRemoteCandidate({});
         }
       });
+    } else if (message.type === 'signalData') {
+      this.parent.emit('receivedSignalData', message.payload.type, message.payload.payload, self);
     }
   }
 
-  // send via signalling channel
+  // send via signaling channel
   send(messageType, payload) {
     const message = {
       to: this.id,
