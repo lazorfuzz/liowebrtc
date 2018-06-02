@@ -1,6 +1,6 @@
 {
   "name": "liowebrtc",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "repository": "https://github.com/lazorfuzz/liowebrtc",
   "main": "./dist/liowebrtc.js",
   "description": "An Electron-compatible WebRTC library that makes it easy to embed peer to peer communication into React components.",
