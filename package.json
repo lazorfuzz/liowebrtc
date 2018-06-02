@@ -1,6 +1,6 @@
 {
   "name": "liowebrtc",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": "https://github.com/lazorfuzz/liowebrtc",
   "main": "./dist/liowebrtc.js",
   "description": "An Electron-compatible WebRTC library that makes it easy to embed peer to peer communication into react components.",
@@ -17,8 +17,14 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.2.3",
     "babel-preset-env": "^1.7.0",
     "chromedriver": "^2.29.0",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.4.0",
     "geckodriver": "^1.6.1",
     "request": "^2.72.0",
     "selenium-webdriver": "^3.0.1",
@@ -30,7 +36,7 @@
   "scripts": {
     "build": "babel src --presets babel-preset-env --out-dir dist",
     "test-travis": "test/run-selenium",
-    "lint": "jshint src",
+    "lint": "eslint --cache --fix .",
     "validate": "npm ls",
     "test-page": "echo \"open https://localhost:8443/test/\" && stupid-server -s",
     "test": "node test/selenium/index.js"

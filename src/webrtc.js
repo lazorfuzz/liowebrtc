@@ -12,47 +12,47 @@ class WebRTC extends LocalMedia {
     const config = this.config = {
       debug: false,
       peerConnectionConfig: {
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
       },
       peerConnectionConstraints: {
-        optional: []
+        optional: [],
       },
       receiveMedia: {
         offerToReceiveAudio: 1,
-        offerToReceiveVideo: 1
+        offerToReceiveVideo: 1,
       },
-      enableDataChannels: true
+      enableDataChannels: true,
     };
     let item;
 
     this.logger = ((() => {
-          // we assume that if you're in debug mode and you didn't
-          // pass in a logger, you actually want to log as much as
-          // possible.
+      // we assume that if you're in debug mode and you didn't
+      // pass in a logger, you actually want to log as much as
+      // possible.
       if (opts.debug) {
         return opts.logger || console;
       }
-          // or we'll use your logger which should have its own logic
-          // for output. Or we'll return the no-op.
+      // or we'll use your logger which should have its own logic
+      // for output. Or we'll return the no-op.
       return opts.logger || mockconsole;
     })());
 
-      // set options
+    // set options
     for (item in options) {
       if (options.hasOwnProperty(item)) {
         this.config[item] = options[item];
       }
     }
 
-      // check for support
+    // check for support
     if (!webrtcSupport.support) {
       this.logger.error('Your browser doesn\'t seem to support WebRTC');
     }
 
-      // where we'll store our peer connections
+    // where we'll store our peer connections
     this.peers = [];
 
-      // call localMedia constructor
+    // call localMedia constructor
     // localMedia.call(this, this.config);
 
     this.on('speaking', () => {
@@ -89,12 +89,12 @@ class WebRTC extends LocalMedia {
       }
     });
 
-      // log events in debug mode
+    // log events in debug mode
     if (this.config.debug) {
       this.on('*', (event, val1, val2) => {
         let logger;
-              // if you didn't pass in a logger and you explicitly turning on debug
-              // we're just going to assume you're wanting log output with console
+        // if you didn't pass in a logger and you explicitly turning on debug
+        // we're just going to assume you're wanting log output with console
         if (self.config.logger === mockconsole) {
           logger = console;
         } else {
@@ -122,7 +122,7 @@ class WebRTC extends LocalMedia {
 
   // fetches all Peer objects by session id and/or type
   getPeers(sessionId, type) {
-    return this.peers.filter((peer) => (!sessionId || peer.id === sessionId) && (!type || peer.type === type));
+    return this.peers.filter(peer => (!sessionId || peer.id === sessionId) && (!type || peer.type === type));
   }
 
   // sends message to all

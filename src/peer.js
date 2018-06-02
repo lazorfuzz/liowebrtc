@@ -30,7 +30,7 @@ class Peer extends WildEmitter {
     this.receiveMedia = options.receiveMedia || this.parent.config.receiveMedia;
     this.channels = {};
     this.sid = options.sid || Date.now().toString();
-      // Create an RTCPeerConnection via the polyfill
+    // Create an RTCPeerConnection via the polyfill
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionConstraints);
     this.pc.on('ice', this.onIceCandidate.bind(this));
     this.pc.on('endOfCandidates', (event) => {
@@ -47,17 +47,17 @@ class Peer extends WildEmitter {
     this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
     this.pc.on('addChannel', this.handleDataChannelAdded.bind(this));
     this.pc.on('removeStream', this.handleStreamRemoved.bind(this));
-      // Just fire negotiation needed events for now
-      // When browser re-negotiation handling seems to work
-      // we can use this as the trigger for starting the offer/answer process
-      // automatically. We'll just leave it be for now while this stabalizes.
+    // Just fire negotiation needed events for now
+    // When browser re-negotiation handling seems to work
+    // we can use this as the trigger for starting the offer/answer process
+    // automatically. We'll just leave it be for now while this stabalizes.
     this.pc.on('negotiationNeeded', this.emit.bind(this, 'negotiationNeeded'));
     this.pc.on('iceConnectionStateChange', this.emit.bind(this, 'iceConnectionStateChange'));
     this.pc.on('iceConnectionStateChange', () => {
       switch (self.pc.iceConnectionState) {
         case 'failed':
-              // currently, in chrome only the initiator goes to failed
-              // so we need to signal this to the peer
+          // currently, in chrome only the initiator goes to failed
+          // so we need to signal this to the peer
           if (self.pc.pc.localDescription.type === 'offer') {
             self.parent.emit('iceFailed', self);
             self.send('connectivityError');
@@ -68,7 +68,7 @@ class Peer extends WildEmitter {
     this.pc.on('signalingStateChange', this.emit.bind(this, 'signalingStateChange'));
     this.logger = this.parent.logger;
 
-      // handle screensharing/broadcast mode
+    // handle screensharing/broadcast mode
     if (options.type === 'screen') {
       if (this.parent.localScreens && this.parent.localScreens[0] && this.sharemyscreen) {
         this.logger.log('adding local screen stream to peer connection');
@@ -83,7 +83,7 @@ class Peer extends WildEmitter {
 
     this.on('channelOpen', (channel) => {
       if (channel.protocol === INBAND_FILETRANSFER_V1) {
-        channel.onmessage = event => {
+        channel.onmessage = (event) => {
           const metadata = JSON.parse(event.data);
           const receiver = new FileTransfer.Receiver();
           receiver.receive(metadata, channel);
@@ -95,7 +95,7 @@ class Peer extends WildEmitter {
       }
     });
 
-      // proxy events to parent
+    // proxy events to parent
     this.on('*', function () {
       self.parent.emit(...arguments);
     });
@@ -115,9 +115,9 @@ class Peer extends WildEmitter {
         if (err) {
           return;
         }
-              // auto-accept
+        // auto-accept
         self.pc.answer((err, sessionDescription) => {
-                  // self.send('answer', sessionDescription);
+          // self.send('answer', sessionDescription);
         });
       });
     } else if (message.type === 'answer') {
@@ -133,8 +133,8 @@ class Peer extends WildEmitter {
     } else if (message.type === 'unmute') {
       this.parent.emit('unmute', { id: message.from, name: message.payload.name });
     } else if (message.type === 'endOfCandidates') {
-          // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
-          // shim this will only be called in Edge.
+      // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
+      // shim this will only be called in Edge.
       const mLines = this.pc.pc.transceivers || [];
       mLines.forEach((mLine) => {
         if (mLine.iceTransport) {
@@ -153,7 +153,7 @@ class Peer extends WildEmitter {
       roomType: this.type,
       type: messageType,
       payload,
-      prefix: webrtcSupport.prefix
+      prefix: webrtcSupport.prefix,
     };
     this.logger.log('sending', messageType, message);
     this.parent.emit('message', message);
@@ -164,7 +164,7 @@ class Peer extends WildEmitter {
   sendDirectly(messageType, payload, channel = 'liowebrtc') {
     const message = {
       type: messageType,
-      payload
+      payload,
     };
     this.logger.log('sending via datachannel', channel, messageType, message);
     const dc = this.getDataChannel(channel);
@@ -178,7 +178,7 @@ class Peer extends WildEmitter {
     const self = this;
     channel.onclose = this.emit.bind(this, 'channelClose', channel);
     channel.onerror = this.emit.bind(this, 'channelError', channel);
-    channel.onmessage = event => {
+    channel.onmessage = (event) => {
       self.emit('channelMessage', self, channel.label, JSON.parse(event.data), channel, event);
     };
     channel.onopen = this.emit.bind(this, 'channelOpen', channel);
@@ -189,7 +189,7 @@ class Peer extends WildEmitter {
     let channel = this.channels[name];
     opts || (opts = {});
     if (channel) return channel;
-      // if we don't have one by this label, create it
+    // if we don't have one by this label, create it
     channel = this.channels[name] = this.pc.createDataChannel(name, opts);
     this._observeDataChannel(channel);
     return channel;
@@ -214,16 +214,16 @@ class Peer extends WildEmitter {
   start() {
     const self = this;
 
-      // well, the webrtc api requires that we either
-      // a) create a datachannel a prioris
-      // b) do a renegotiation later to add the SCTP m-line
-      // Let's do (a) first...
+    // well, the webrtc api requires that we either
+    // a) create a datachannel a prioris
+    // b) do a renegotiation later to add the SCTP m-line
+    // Let's do (a) first...
     if (this.enableDataChannels) {
       this.getDataChannel('liowebrtc');
     }
 
     this.pc.offer(this.receiveMedia, (err, sessionDescription) => {
-          // self.send('offer', sessionDescription);
+      // self.send('offer', sessionDescription);
     });
   }
 
@@ -275,17 +275,17 @@ class Peer extends WildEmitter {
   sendFile(file) {
     const sender = new FileTransfer.Sender();
     const dc = this.getDataChannel(`filetransfer${(new Date()).getTime()}`, {
-      protocol: INBAND_FILETRANSFER_V1
+      protocol: INBAND_FILETRANSFER_V1,
     });
       // override onopen
     dc.onopen = () => {
       dc.send(JSON.stringify({
         size: file.size,
-        name: file.name
+        name: file.name,
       }));
       sender.send(file, dc);
     };
-      // override onclose
+    // override onclose
     dc.onclose = () => {
       console.log('sender received transfer');
       sender.emit('complete');
