@@ -125,6 +125,10 @@ class WebRTC extends LocalMedia {
     return this.peers.filter(peer => (!sessionId || peer.id === sessionId) && (!type || peer.type === type));
   }
 
+  getPeerByNick(nick) {
+    return this.peers.filter(p => p.nick === nick)[0];
+  }
+
   // sends message to all
   sendToAll(message, payload) {
     this.peers.forEach((peer) => {
@@ -152,6 +156,10 @@ class WebRTC extends LocalMedia {
 
   broadcast(messageType, payload) {
     this.sendToAll('signalData', { type: messageType, payload });
+  }
+
+  transmit(peer, messageType, payload) {
+    peer.send('signalData', { type: messageType, payload });
   }
 }
 
