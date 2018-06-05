@@ -26,12 +26,12 @@ By default, this enables video, audio, and data channels.
 const webrtc = new LioWebRTC({
     // The local video ref set within your render function, or the element's id
     localVideoEl: localVideoIdOrRef,
-    // Immediately request camera and mic access.
+    // Immediately request camera and mic access
     autoRequestMedia: true,
-    // Displays events emitted by the webrtc object in the console.
+    // Displays events emitted by the webrtc object in the console
     debug: true,
     // The url for your signaling server
-    url: 'https://sandbox.simplewebrtc.com:443/',
+    url: 'https://sandbox.simplewebrtc.com:443/'
 });
 ```
 

@@ -102,13 +102,7 @@ class LioWebRTC extends WildEmitter {
         peer.handleMessage(message);
       } else if (peers.length) {
         peers.forEach((p) => {
-          if (message.sid) {
-            if (p.sid === message.sid) {
-              p.handleMessage(message);
-            }
-          } else {
-            p.handleMessage(message);
-          }
+          p.handleMessage(message);
         });
       }
     });
