@@ -330,6 +330,8 @@ ending all peers, and stopping the local screen stream
 
 `broadcast(messageType, payload)` - broadcasts a message to all peers in the
 room via the signaling server (similar to `shout`, but not p2p). Listen for peers' broadcasts on the `receivedSignalData` event.
+- `string messageType` a label, usually a string, that describes the payload
+- `object payload` - an arbitrary value or object to send to peers
 
 `createRoom(name, callback)` - emits the `create` event and optionally invokes `callback` on response
 
@@ -375,7 +377,7 @@ to all peers in the room via a data channel (same as `shout`, except you can spe
 
 `shout(messageType, payload)` - sends a message
 to all peers in the room via the default p2p data channel. Listen for peers' shouts on the `receivedPeerData` event.
-- `string messageType` - An arbitrary value that represents the classification of the payload
+- `string messageType` a label, usually a string, that describes the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `startLocalVideo()` - starts the local video or audio streams with the `media` options provided
@@ -387,13 +389,17 @@ in the config
 
 `transmit(peer, messageType, payload)` - sends a message to a single peer in the
 room via the signaling server (similar to `whisper`, but not p2p). Listen for peers' transmissions on the `receivedSignalData` event.
+- `Peer peer` the object representing the peer and its peer connection
+- `string messageType` a label, usually a string, that describes the payload
+- `object payload` any kind of data sent by the peer, usually an object
 
 `unmute()` - unmutes the audio stream to your peers (resumes sending audio in the WebRTC audio channel)
-- `volume` - the volume level, between 0 and 1
+- `float volume` - the volume level, between 0 and 1
 
 `whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default p2p data channel. Listen for peers' whispers on the `receivedPeerData` event.
-- `string messageType` - An arbitrary value that represents the classification of the payload
-- `object payload` - an arbitrary value or object to send to peers
+- `Peer peer` the object representing the peer and its peer connection
+- `string messageType` a label, usually a string, that describes the payload
+- `object payload` any kind of data sent by the peer, usually an object
 
 
 ## Signaling
