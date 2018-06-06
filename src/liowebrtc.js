@@ -120,7 +120,7 @@ class LioWebRTC extends WildEmitter {
     this.webrtc = new WebRTC(opts);
 
     // attach a few methods from underlying lib to liowebrtc.
-    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers', 'getPeerByNick', 'shout', 'whisper', 'broadcast'].forEach((method) => {
+    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers', 'getPeerByNick', 'shout', 'whisper', 'broadcast', 'transmit'].forEach((method) => {
       self[method] = self.webrtc[method].bind(self.webrtc);
     });
 
