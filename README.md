@@ -3,7 +3,9 @@ An Electron-compatible, event-based WebRTC library that makes it easy to embed p
 
 LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React, JSX, and Electron.
 
-[Click here](https://chatdemo.razorfart.com/) to see a chatroom demo app built with React and LioWebRTC.
+[Click here](https://chatdemo.razorfart.com/) to see a chatroom demo built with React and LioWebRTC.
+
+[Click here](https://vchatdemo.razorfart.com/) to see a video conferencing demo app built with React and LioWebRTC.
 
 ## Usage
 
@@ -138,7 +140,7 @@ class Party extends Component {
 
   componentDidMount() {
     this.webrtc = new LioWebRTC({
-      // The url for your signaling server
+      // The url for your signaling server. Use your own in production!
       url: 'https://sandbox.simplewebrtc.com:443/',
       // The local video ref set within your render function
       localVideoEl: this.localVid,
@@ -185,7 +187,6 @@ class Party extends Component {
     <div key={p.id}>
       <div id={/* The video container needs a special id */ `${this.webrtc.getContainerId(p)}`}>
         <video
-          key={this.webrtc.getId(p)}
           // Important: The video element needs both an id and ref
           id={this.webrtc.getId(p)}
           ref={(v) => this.remoteVideos[p.id] = v}
@@ -259,12 +260,10 @@ export default Party;
   ```javascript
   {
       autoplay: true, // automatically play the video stream on the page
-      mirror: false, // flip the local video to mirror mode (for UX)
+      mirror: true, // flip the local video to mirror mode (for UX)
       muted: true // mute local video stream to prevent echo
   }
   ```
-  - `object logger` - *optional* alternate logger for the instance; any object
-  that implements `log`, `warn`, and `error` methods.
 
 ### Fields
 
@@ -332,9 +331,14 @@ ending all peers, and stopping the local screen stream
 
 ### Methods
 
-`attachStream(stream, el)` - attaches a media stream to a video or audio element
-- `MediaStream stream` - an object representing a media stream
+`attachStream(stream, el, opts)` - attaches a media stream to a video or audio element
+- `MediaStream stream` - an object representing a local or peer media stream
 - `HTMLElement el` - the element (or ref if you're using React) to attach the media stream to, usually a video or audio element
+- `object opts` - an object representing optional configuration for attachStream
+    - `bool autoplay` - autoplay the video once attached. Defaults to `true`
+    - `bool muted` - mute the video once attached. Defaults to `false`
+    - `bool mirror` - mirror the video once attached. Defaults to `true`
+    - `bool audio` - attach to `<audio>` element instead of `<video>` element. Defaults to `false`
 
 `broadcast(messageType, payload)` - broadcasts a message to all peers in the
 room via the signaling server (similar to `shout`, but not p2p). Listen for peers' broadcasts on the `receivedSignalData` event.
@@ -345,7 +349,7 @@ room via the signaling server (similar to `shout`, but not p2p). Listen for peer
 
 `disconnect()` - calls `disconnect` on the signaling connection and deletes it. Peers will still be available
 
-`emit(eventLabel, ...args)` - emit arbitrary event (Emits locally. To emit stuff to the room, use `broadcast`)
+`emit(eventLabel, ...args)` - emit arbitrary event (Emits locally. To emit stuff other peers, use `shout`)
 
 `getContainerId(peer)` - get the DOM id associated with a peer's media element. In JSX, you will need to set the id of the container element to this value
 
@@ -391,7 +395,7 @@ to all peers in the room via the default p2p data channel. Listen for peers' sho
 - `object payload` - an arbitrary value or object to send to peers
 
 `startLocalVideo()` - starts the local video or audio streams with the `media` options provided
-in the config
+in the config. Use this if `autoRequestMedia` is set to false
 
 `stopLocalVideo()` - stops all local media streams
 
@@ -420,7 +424,7 @@ WebRTC needs to be facilitated with signaling; a service that acts as a matchmak
 
 For emitting data to peers, LioWebRTC provides a unified, event-based API that enables peers to seamlessly switch between `shout`ing (p2p data channels) or `broadcast`ing (socket.io) to all the peers in a room. It's up to you to decide which protocol to use, but socket.io should ideally only be used for transmitting things like metadata, one-off events, etc. Both protocols are real-time, bidirectional, and event-based.
 
-When joining a room, the device becomes a node in a full mesh network consisting of every other peer in the room, opening a unique data channel to each peer. For video conferencing, that means a unique video, audio, and data channel is opened for each peer.
+When joining a room, the client becomes a node in a full mesh network consisting of every other peer in the room, opening a unique data channel to each peer. For video conferencing, that means a unique video, audio, and data channel is opened for each peer.
 
 The socket.io connection remains a single bi-directional pipeline between the client and the signaling server. It will always be a single connection no matter how many peers there are in the room.
 
@@ -442,4 +446,4 @@ To start your signalmaster server in production mode using PM2, do the following
 ```
 NODE_ENV=production pm2 start signalmaster
 ```
-Then pass your server's url into the LioWebRTC instantiation config.
+Then pass your server's url into your LioWebRTC instantiation config.
