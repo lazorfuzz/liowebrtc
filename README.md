@@ -215,10 +215,7 @@ class Party extends Component {
             />
             <p>{this.state.nick}</p>
         </div>
-
-        <div id="remoteVideos">
-          {this.generateRemotes()}
-        </div>
+        {this.generateRemotes()}
       </div>
     );
   }
@@ -306,6 +303,9 @@ ending all peers, and stopping the local screen stream
 `'localScreenAdded', el` - emitted after triggering the start of screen sharing
 - `el` the element that contains the local screen stream
 
+`'mute', data` - emitted when a peer mutes their video or audioOn
+- `data` an object that contains an `id` property that returns the id of the peer, and a `name` property that indicates which stream was muted, `video` or `audio`
+
 `'receivedPeerData', type, payload, peer` - emitted when a peer sends data via `shout` or `whisper`
 - `type` a label, usually a string, that describes the payload
 - `payload` any kind of data sent by the peer, usually an object
@@ -319,6 +319,9 @@ ending all peers, and stopping the local screen stream
 `'stunservers', [...args]` - emitted when the signaling server emits a list of stun servers.
 
 `'turnservers', [...args]` - emitted when the signaling server emits a list of turn servers.
+
+`'unmute', data` - emitted when a peer mutes their video or audioOn
+- `data` an object that contains an `id` property for the id of the peer that sent the event, and a `name` property that indicates which stream was muted, `video` or `audio`
 
 `'videoAdded', stream, peer` - emitted when a peer's MediaStream becomes available
 - `stream` - the MediaStream associated with the peer
@@ -349,6 +352,8 @@ room via the signaling server (similar to `shout`, but not p2p). Listen for peer
 `getId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
 
 `getLocalScreen()` - returns the local screen stream
+
+`getPeerById(id)` - returns a peer with a given `id`
 
 `getPeerByNick(nick)` - returns a peer with a given `nick`
 

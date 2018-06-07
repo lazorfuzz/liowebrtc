@@ -160,6 +160,7 @@ class LocalMedia extends WildEmitter {
 
         self.emit('localScreen', stream);
       } else {
+        console.error(err);
         self.emit('localScreenRequestFailed');
       }
 

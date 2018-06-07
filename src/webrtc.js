@@ -125,6 +125,10 @@ class WebRTC extends LocalMedia {
     return this.peers.filter(peer => (!sessionId || peer.id === sessionId) && (!type || peer.type === type));
   }
 
+  getPeerById(id) {
+    return this.peers.filter(p => p.id === id)[0];
+  }
+
   getPeerByNick(nick) {
     return this.peers.filter(p => p.nick === nick)[0];
   }

@@ -33,8 +33,9 @@ class LioWebRTC extends WildEmitter {
       },
       localVideo: {
         autoplay: true,
-        mirror: false,
+        mirror: true,
         muted: true,
+        audio: false,
       },
     };
 
@@ -59,6 +60,10 @@ class LioWebRTC extends WildEmitter {
       this.config.media.audio = false;
       this.config.receiveMedia.offerToReceiveAudio = false;
       this.config.receiveMedia.offerToReceiveVideo = false;
+    }
+
+    if (!this.config.media.video && this.config.media.audio) {
+      this.config.localVideo.audio = true;
     }
 
     // attach detected support for convenience
@@ -120,7 +125,23 @@ class LioWebRTC extends WildEmitter {
     this.webrtc = new WebRTC(opts);
 
     // attach a few methods from underlying lib to liowebrtc.
-    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll', 'getPeers', 'getPeerByNick', 'shout', 'whisper', 'broadcast', 'transmit'].forEach((method) => {
+    [
+      'mute',
+      'unmute',
+      'pauseVideo',
+      'resumeVideo',
+      'pause',
+      'resume',
+      'sendToAll',
+      'sendDirectlyToAll',
+      'getPeers',
+      'getPeerByNick',
+      'getPeerById',
+      'shout',
+      'whisper',
+      'broadcast',
+      'transmit',
+    ].forEach((method) => {
       self[method] = self.webrtc[method].bind(self.webrtc);
     });
 
@@ -345,13 +366,20 @@ class LioWebRTC extends WildEmitter {
       if (err) {
         self.emit('localMediaError', err);
       } else {
-        attachMediaStream(stream, this.config.localVideoEl, { muted: true });
+        attachMediaStream(stream, this.config.localVideoEl, this.config.localVideo);
       }
     });
   }
 
-  attachStream(stream, el) {
-    attachMediaStream(stream, el);
+  attachStream(stream, el, opts) { // eslint-disable-line
+    let options = {
+      autoplay: true,
+      muted: false,
+      mirror: true,
+      audio: false,
+    };
+    if (opts) options = opts;
+    attachMediaStream(stream, el, options);
   }
 
   stopLocalVideo() {
@@ -388,10 +416,6 @@ class LioWebRTC extends WildEmitter {
         peer.end();
       }
     });
-  }
-
-  attachStream(stream, el) {
-    attachMediaStream(stream, el);
   }
 
   testReadiness() {
