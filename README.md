@@ -129,6 +129,7 @@ class Party extends Component {
     this.state = {
       nick: this.props.nick,
       roomID: `party-${this.props.roomName}`,
+      peers: [],
       muted: false,
       camPaused: false
     };
@@ -145,6 +146,7 @@ class Party extends Component {
       autoRequestMedia: true,
       // Optional: nickname
       nick: this.state.nick,
+      debug: true
     });
 
     this.webrtc.on('videoAdded', this.addVideo);
@@ -155,11 +157,15 @@ class Party extends Component {
   }
 
   addVideo = (stream, peer) => {
-    this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
+    this.setState({ peers: [...this.state.peers, peer] }, () => {
+      this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
+    });
   }
 
   removeVideo = (peer) => {
-    // Clean up video
+    this.setState({
+      peers: this.state.peers.filter(p => !p.closed)
+    });
   }
 
   handleConnectionError = (peer) => {
@@ -175,10 +181,9 @@ class Party extends Component {
   }
 
   // Show fellow peers in the room
-  generateRemotes = () => this.webrtc.getPeers().map((p) => (
+  generateRemotes = () => this.state.peers.map((p) => (
     <div key={p.id}>
-      // The video parent container needs a special id
-      <div id={`${this.webrtc.getContainerId(p)}`}>
+      <div id={/* The video container needs a special id */ `${this.webrtc.getContainerId(p)}`}>
         <video
           key={this.webrtc.getId(p)}
           // Important: The video element needs both an id and ref
