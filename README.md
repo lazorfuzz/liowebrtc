@@ -1,7 +1,7 @@
 # LioWebRTC
-An Electron-compatible, event-based WebRTC library that makes it easy to embed peer to peer communication into React components.
+An Electron-compatible WebRTC library that makes it easy to embed scalable peer to peer communication into React components.
 
-LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React, JSX, and Electron.
+LioWebRTC was built on SimpleWebRTC, and modified to be compatible with React, JSX, and Electron. It can also be configured for scalability using partial mesh networks, making it possible to emit data via data channels to thousands of peers in a room, while only needing to be connected to at least one other peer in the room.
 
 [Click here](https://chatdemo.razorfart.com/) to see a chatroom demo built with React and LioWebRTC.
 
@@ -38,7 +38,7 @@ const webrtc = new LioWebRTC({
 ```
 
 ### Data channels only
-Disable webcam/mic streaming, and only allow data channels.
+Disable video/audio streaming, and only allow data channels.
 ```js
 const webrtc = new LioWebRTC({
     dataOnly: true
@@ -60,7 +60,7 @@ const webrtc = new LioWebRTC({
 ### Join a room once it's ready
 
 ```js
-webrtc.on('readyToCall', () => {
+webrtc.on('ready', () => {
     // Joins a room if it exists, creates it if it doesn't
     webrtc.joinRoom('your room name');
 });
@@ -153,7 +153,7 @@ class Party extends Component {
 
     this.webrtc.on('videoAdded', this.addVideo);
     this.webrtc.on('videoRemoved', this.removeVideo);
-    this.webrtc.on('readyToCall', this.readyToCall);
+    this.webrtc.on('ready', this.readyToJoin);
     this.webrtc.on('iceFailed', this.handleConnectionError);
     this.webrtc.on('connectivityError', this.handleConnectionError);
   }
@@ -176,7 +176,7 @@ class Party extends Component {
     console.log('had remote relay candidate', pc.hadRemoteRelayCandidate);
   }
 
-  readyToCall = () => {
+  readyToJoin = () => {
     // Starts the process of joining a room.
     this.webrtc.joinRoom(this.state.roomID, (err, desc) => {
     });
@@ -197,9 +197,7 @@ class Party extends Component {
     ));
 
   disconnect = () => {
-    this.webrtc.stopLocalVideo();
-    this.webrtc.leaveRoom();
-    this.webrtc.disconnect();
+    this.webrtc.quit();
   }
 
   componentWillUnmount() {
@@ -294,16 +292,18 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 `'createdPeer', peer` - this will be emitted when:
 - joining a room with existing peers, once for each peer
 - a new peer joins your room
-- sharing screen, once for each peer
 
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
-ending all peers, and stopping the local screen stream
-
-`'localScreenAdded', el` - emitted after triggering the start of screen sharing
-- `el` the element that contains the local screen stream
+ending all peers, and stopping local stream
 
 `'mute', data` - emitted when a peer mutes their video or audioOn
 - `data` an object that contains an `id` property that returns the id of the peer, and a `name` property that indicates which stream was muted, `video` or `audio`
+
+`'removedPeer', peer` - emitted when a peer loses connection or exits the room
+- `peer` - the peer associated with the stream that was removed
+
+`'ready', sessionId` - emitted when liowebrtc is ready to join a room
+- `sessionId` - the socket.io connection session ID
 
 `'receivedPeerData', type, payload, peer` - emitted when a peer sends data via `shout` or `whisper`
 - `type` a label, usually a string, that describes the payload
@@ -334,7 +334,7 @@ ending all peers, and stopping the local screen stream
 `attachStream(stream, el, opts)` - attaches a media stream to a video or audio element
 - `MediaStream stream` - an object representing a local or peer media stream
 - `HTMLElement el` - the element (or ref if you're using React) to attach the media stream to, usually a video or audio element
-- `object opts` - an object representing optional configuration for attachStream
+- `object opts` - *optional* optional configuration for attachStream
     - `bool autoplay` - autoplay the video once attached. Defaults to `true`
     - `bool muted` - mute the video once attached. Defaults to `false`
     - `bool mirror` - mirror the video once attached. Defaults to `true`
@@ -342,7 +342,7 @@ ending all peers, and stopping the local screen stream
 
 `broadcast(messageType, payload)` - broadcasts a message to all peers in the
 room via the signaling server (similar to `shout`, but not p2p). Listen for peers' broadcasts on the `receivedSignalData` event.
-- `string messageType` a label, usually a string, that describes the payload
+- `string messageType` an arbitrary label, usually a string, that describes the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `createRoom(name, callback)` - emits the `create` event and optionally invokes `callback` on response
@@ -352,30 +352,35 @@ room via the signaling server (similar to `shout`, but not p2p). Listen for peer
 `emit(eventLabel, ...args)` - emit arbitrary event (Emits locally. To emit stuff other peers, use `shout`)
 
 `getContainerId(peer)` - get the DOM id associated with a peer's media element. In JSX, you will need to set the id of the container element to this value
+- `Peer peer` - the object representing the peer and its peer connection
 
 `getId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
-
-`getLocalScreen()` - returns the local screen stream
+- `Peer peer` - the object representing the peer and its peer connection
 
 `getPeerById(id)` - returns a peer with a given `id`
+- `string id`  - the id of the peer
 
 `getPeerByNick(nick)` - returns a peer with a given `nick`
+- `string nick` - the peer's nickname
 
-`getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
+`getPeers(sessionId)` - returns all peers by `sessionId`
+- `string sessionId` - the sid of the current room. Will return all peers if no sessionId is provided.
 
 `joinRoom(name, callback)` - joins the room `name`. Callback is
 invoked with `callback(err, roomDescription)` where `roomDescription` is yielded
 by the connection on the `join` event. See [signalmaster](https://github.com/andyet/signalmaster) for details about rooms.
 
-`leaveRoom()` - leaves the currently joined room and stops local screen share
+`leaveRoom()` - leaves the currently joined room and stops local streams
 
 `mute()` - mutes the local audio stream to your peers (stops sending audio in the WebRTC audio channel)
 
-`on(ev, fn)` - creates an event listener for event `ev`
+`on(ev, fn)` - creates an event listener for event `ev` handled by `fn`
 
 `pause()` - pauses both video and audio streams to your peers
 
 `pauseVideo()` - pauses the video stream to your peers (stops sending video in the WebRTC video channel)
+
+`quit()` - stops the local video, leaves the currently joined room, and disconnects from the signaling server
 
 `resume()` - resumes sending video and audio to your peers
 
@@ -387,11 +392,9 @@ to all peers in the room via a data channel (same as `shout`, except you can spe
 
 `setVolumeForAll(volume)` - set the volume level for all peers
 
-`shareScreen(callback)` - initiates screen capture request to browser, then streams the video to peers in the room
-
 `shout(messageType, payload)` - sends a message
 to all peers in the room via the default p2p data channel. Listen for peers' shouts on the `receivedPeerData` event.
-- `string messageType` a label, usually a string, that describes the payload
+- `string messageType` - an arbitrary label, usually a string, that describes the payload
 - `object payload` - an arbitrary value or object to send to peers
 
 `startLocalVideo()` - starts the local video or audio streams with the `media` options provided
@@ -399,28 +402,26 @@ in the config. Use this if `autoRequestMedia` is set to false
 
 `stopLocalVideo()` - stops all local media streams
 
-`stopScreenShare()` - stops the screen share stream and removes it from the room
-
 `transmit(peer, messageType, payload)` - sends a message to a single peer in the
 room via the signaling server (similar to `whisper`, but not p2p). Listen for peers' transmissions on the `receivedSignalData` event.
-- `Peer peer` the object representing the peer and its peer connection
-- `string messageType` a label, usually a string, that describes the payload
-- `object payload` any kind of data sent by the peer, usually an object
+- `Peer peer` - the object representing the peer and its peer connection
+- `string messageType` - an arbitrary label, usually a string, that describes the payload
+- `object payload` - any kind of data sent by the peer, usually an object
 
 `unmute()` - unmutes the audio stream to your peers (resumes sending audio in the WebRTC audio channel)
 - `float volume` - the volume level, between 0 and 1
 
 `whisper(peer, messageType, payload)` - sends a message to a single peer in the room via the default p2p data channel. Listen for peers' whispers on the `receivedPeerData` event.
-- `Peer peer` the object representing the peer and its peer connection
-- `string messageType` a label, usually a string, that describes the payload
-- `object payload` any kind of data sent by the peer, usually an object
+- `Peer peer` - the object representing the peer and its peer connection
+- `string messageType` - an arbitrary label, usually a string, that describes the payload
+- `object payload` - any kind of data sent by the peer, usually an object
 
 
 ## Signaling
 
 WebRTC needs to be facilitated with signaling; a service that acts as a matchmaker for peers before they establish direct video/audio/data channels. Signaling can be done in any way, e.g. via good old fashioned carrier pigeons. Signaling services only need to fulfill the absolute minimal role of matchmaking peers.
 
-[Signalmaster](https://github.com/andyet/signalmaster) is a [socket.io](http://socket.io/) server signaling solution, and is very easy to set up. socket.io enables real-time, bidirectional communication between a client and server via web sockets. It also allows us to easily segment peers into "rooms."
+[Signalmaster](https://github.com/andyet/signalmaster) is a [socket.io](http://socket.io/) server signaling solution, and is very easy to set up. socket.io enables real-time, bidirectional communication between a client and server via web sockets. It also allows us to easily segment peers into rooms.
 
 For emitting data to peers, LioWebRTC provides a unified, event-based API that enables peers to seamlessly switch between `shout`ing (p2p data channels) or `broadcast`ing (socket.io) to all the peers in a room. It's up to you to decide which protocol to use, but socket.io should ideally only be used for transmitting things like metadata, one-off events, etc. Both protocols are real-time, bidirectional, and event-based.
 

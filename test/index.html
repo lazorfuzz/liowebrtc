@@ -54,7 +54,7 @@
             });
 
             // when it's ready, join if we got a room from the URL
-            webrtc.on('readyToCall', function () {
+            webrtc.on('ready', function () {
                 // you can name it anything
                 if (room) webrtc.joinRoom(room);
             });

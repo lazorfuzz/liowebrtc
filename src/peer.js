@@ -3,10 +3,6 @@ import WildEmitter from 'wildemitter';
 import FileTransfer from 'filetransfer';
 import webrtcSupport from './webrtcsupport';
 
-// the inband-v1 protocol is sending metadata inband in a serialized JSON object
-// followed by the actual data. Receiver closes the datachannel upon completion
-const INBAND_FILETRANSFER_V1 = 'https://simplewebrtc.com/protocol/filetransfer#inband-v1';
-
 function isAllTracksEnded(stream) {
   let isAllTracksEnded = true;
   stream.getTracks().forEach((t) => {
@@ -63,6 +59,8 @@ class Peer extends WildEmitter {
             self.send('connectivityError');
           }
           break;
+        default:
+          break;
       }
     });
     this.pc.on('signalingStateChange', this.emit.bind(this, 'signalingStateChange'));
@@ -82,17 +80,6 @@ class Peer extends WildEmitter {
     }
 
     this.on('channelOpen', (channel) => {
-      if (channel.protocol === INBAND_FILETRANSFER_V1) {
-        channel.onmessage = (event) => {
-          const metadata = JSON.parse(event.data);
-          const receiver = new FileTransfer.Receiver();
-          receiver.receive(metadata, channel);
-          self.emit('fileTransfer', metadata, receiver);
-          receiver.on('receivedFile', (file, metadata) => {
-            receiver.channel.close();
-          });
-        };
-      }
     });
 
     // proxy events to parent
@@ -107,8 +94,11 @@ class Peer extends WildEmitter {
     if (message.prefix) this.browserPrefix = message.prefix;
 
     if (message.type === 'offer') {
-      if (!this.nick) this.nick = message.payload.nick;
-      delete message.payload.nick;
+      if (!this.nick) {
+        const n = message.payload.nick;
+        this.nick = n;
+      }
+      // delete message.payload.nick;
       this.pc.handleOffer(message.payload, (err) => {
         if (err) {
           return;
@@ -116,6 +106,7 @@ class Peer extends WildEmitter {
         // auto-accept
         self.pc.answer((err, sessionDescription) => {
           // self.send('answer', sessionDescription);
+          // console.log('answering', sessionDescription);
         });
       });
     } else if (message.type === 'answer') {
@@ -154,6 +145,7 @@ class Peer extends WildEmitter {
       type: messageType,
       payload,
       prefix: webrtcSupport.prefix,
+      timestamp: Date.now()
     };
     this.logger.log('sending', messageType, message);
     this.parent.emit('message', message);
@@ -161,10 +153,12 @@ class Peer extends WildEmitter {
 
   // send via data channel
   // returns true when message was sent and false if channel is not open
-  sendDirectly(messageType, payload, channel = 'liowebrtc') {
+  sendDirectly(messageType, payload, channel = 'liowebrtc', shout = false, messageId = `${Date.now()}_${Math.random() * 1000000}`) {
     const message = {
       type: messageType,
       payload,
+      _id: messageId,
+      shout,
     };
     this.logger.log('sending via datachannel', channel, messageType, message);
     const dc = this.getDataChannel(channel);
@@ -215,7 +209,7 @@ class Peer extends WildEmitter {
     const self = this;
 
     // well, the webrtc api requires that we either
-    // a) create a datachannel a prioris
+    // a) create a datachannel a priori
     // b) do a renegotiation later to add the SCTP m-line
     // Let's do (a) first...
     if (this.enableDataChannels) {
@@ -263,7 +257,7 @@ class Peer extends WildEmitter {
     if (peerIndex > -1) {
       this.parent.peers.splice(peerIndex, 1);
       this.closed = true;
-      this.parent.emit('peerStreamRemoved', this);
+      this.parent.emit('removedPeer', this);
     }
   }
 
@@ -287,7 +281,7 @@ class Peer extends WildEmitter {
     };
     // override onclose
     dc.onclose = () => {
-      console.log('sender received transfer');
+      // ('sender received transfer');
       sender.emit('complete');
     };
     return sender;

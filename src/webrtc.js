@@ -142,16 +142,17 @@ class WebRTC extends LocalMedia {
 
   // sends message to all using a datachannel
   // only sends to anyone who has an open datachannel
-  sendDirectlyToAll(message, payload, channel) {
+  sendDirectlyToAll(message, payload, channel, shout) {
+    const msgId = `${Date.now()}_${Math.random() * 1000000}`;
     this.peers.forEach((peer) => {
       if (peer.enableDataChannels) {
-        peer.sendDirectly(message, payload, channel);
+        peer.sendDirectly(message, payload, channel, shout, msgId);
       }
     });
   }
 
   shout(messageType, payload) {
-    this.sendDirectlyToAll(messageType, payload, 'liowebrtc');
+    this.sendDirectlyToAll(messageType, payload, 'liowebrtc', true);
   }
 
   whisper(peer, messageType, payload) {
