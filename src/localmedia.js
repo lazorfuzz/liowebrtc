@@ -1,5 +1,4 @@
 import hark from 'hark';
-import getScreenMedia from 'getscreenmedia';
 import WildEmitter from 'wildemitter';
 import mockconsole from 'mockconsole';
 
@@ -103,7 +102,6 @@ class LocalMedia extends WildEmitter {
 
   stop(stream) {
     this.stopStream(stream);
-    this.stopScreenShare(stream);
   }
 
   stopStream(stream) {
@@ -130,72 +128,6 @@ class LocalMedia extends WildEmitter {
       });
     }
   }
-
-  startScreenShare(constraints, cb) {
-    const self = this;
-
-    this.emit('localScreenRequested');
-
-    if (typeof constraints === 'function' && !cb) {
-      cb = constraints;
-      constraints = null;
-    }
-
-    getScreenMedia(constraints, (err, stream) => {
-      if (!err) {
-        self.localScreens.push(stream);
-
-        stream.getTracks().forEach((track) => {
-          track.addEventListener('ended', () => {
-            let isAllTracksEnded = true;
-            stream.getTracks().forEach((t) => {
-              isAllTracksEnded = t.readyState === 'ended' && isAllTracksEnded;
-            });
-
-            if (isAllTracksEnded) {
-              self._removeStream(stream);
-            }
-          });
-        });
-
-        self.emit('localScreen', stream);
-      } else {
-        console.error(err);
-        self.emit('localScreenRequestFailed');
-      }
-
-      // enable the callback
-      if (cb) {
-        return cb(err, stream);
-      }
-    });
-  }
-
-  stopScreenShare(stream) {
-    const self = this;
-
-    if (stream) {
-      const idx = this.localScreens.indexOf(stream);
-      if (idx > -1) {
-        stream.getTracks().forEach((track) => { track.stop(); });
-
-        // Half-working fix for Firefox, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1208373
-        if (shouldWorkAroundFirefoxStopStream()) {
-          this._removeStream(stream);
-        }
-      }
-    } else {
-      this.localScreens.forEach((stream) => {
-        stream.getTracks().forEach((track) => { track.stop(); });
-
-        // Half-working fix for Firefox, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1208373
-        if (shouldWorkAroundFirefoxStopStream()) {
-          self._removeStream(stream);
-        }
-      });
-    }
-  }
-
   // Audio controls
   mute() {
     this._audioEnabled(false);

@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 
 class SocketIoConnection {
   constructor(config) {
-    this.connection = io.connect(config.url, config.socketio);
+    this.connection = io(config.url, config.socketio);
   }
 
   on(ev, fn) {

@@ -74,7 +74,7 @@
                     showVolume(document.getElementById('volume_' + peer.id), data.volume);
                 }
             });
-            webrtc.on('videoAdded', function (video, peer) {
+            webrtc.on('peerStreamAdded', function (video, peer) {
                 console.log('video added', peer);
                 var remotes = document.getElementById('remotes');
                 if (remotes) {
@@ -93,7 +93,7 @@
                     remotes.appendChild(d);
                 }
             });
-            webrtc.on('videoRemoved', function (video, peer) {
+            webrtc.on('peerStreamRemoved', function (video, peer) {
                 console.log('video removed ', peer);
                 var remotes = document.getElementById('remotes');
                 var el = document.getElementById('container_' + webrtc.getId(peer));
@@ -144,21 +144,6 @@
 
             setButton(true);
 
-            button.click(function () {
-                if (webrtc.getLocalScreen()) {
-                    webrtc.stopScreenShare();
-                    setButton(true);
-                } else {
-                    webrtc.shareScreen(function (err) {
-                        if (err) {
-                            setButton(true);
-                        } else {
-                            setButton(false);
-                        }
-                    });
-
-                }
-            });
         </script>
     </body>
 </html>

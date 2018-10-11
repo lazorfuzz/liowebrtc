@@ -2,6 +2,7 @@ import PeerConnection from 'rtcpeerconnection';
 import WildEmitter from 'wildemitter';
 import FileTransfer from 'filetransfer';
 import webrtcSupport from './webrtcsupport';
+import { removeConnection } from './PeerOptimizer';
 
 function isAllTracksEnded(stream) {
   let isAllTracksEnded = true;
@@ -58,6 +59,11 @@ class Peer extends WildEmitter {
             self.parent.emit('iceFailed', self);
             self.send('connectivityError');
           }
+          break;
+        case 'closed':
+          this.handleStreamRemoved(false);
+          self.parent.emit('removedPeer', self);
+          removeConnection(self.parent.id, this.id);
           break;
         default:
           break;
@@ -179,13 +185,14 @@ class Peer extends WildEmitter {
   }
 
   // Fetch or create a data channel by the given name
-  getDataChannel(name, opts) {
+  getDataChannel(name = 'liowebrtc', opts) {
     let channel = this.channels[name];
     opts || (opts = {});
     if (channel) return channel;
     // if we don't have one by this label, create it
     channel = this.channels[name] = this.pc.createDataChannel(name, opts);
     this._observeDataChannel(channel);
+    console.log('CHANNEL', channel);
     return channel;
   }
 
@@ -252,12 +259,12 @@ class Peer extends WildEmitter {
     }
   }
 
-  handleStreamRemoved() {
+  handleStreamRemoved(emitRemoval = true) {
     const peerIndex = this.parent.peers.indexOf(this);
     if (peerIndex > -1) {
       this.parent.peers.splice(peerIndex, 1);
       this.closed = true;
-      this.parent.emit('removedPeer', this);
+      if (emitRemoval) this.parent.emit('peerStreamRemoved', this);
     }
   }
 

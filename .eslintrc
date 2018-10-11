@@ -6,6 +6,10 @@
     "codeFrame": false
   },
   "extends": "airbnb",
+  "plugins": ["jest"],
+  "env": {
+    "jest/globals": true
+  },
   "rules": {
     "max-len": 0,
     "no-multi-assign": 0,
@@ -13,6 +17,14 @@
     "no-param-reassign": 0,
     "no-shadow": 0,
     "consistent-return": 0,
-    "guard-for-in": 0
+    "guard-for-in": 0,
+    "react/jsx-filename-extension": 0,
+    "jsx-a11y/media-has-caption": 0,
+    "react/prop-types": 0,
+    "react/prefer-stateless-function": 0,
+    "no-underscore-dangle": 0,
+    "comma-dangle": 0,
+    "class-methods-use-this": 0,
+    "no-loop-func": 0
     }
 }
