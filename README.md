@@ -280,7 +280,7 @@ export default Party;
     maxPeers: 0 // when 0, maxPeers is infinite
   }
   ```
-  - `bool selfOptimize` - *optional(=true)* whether or not peers in a partial mesh network should self-optimize their connections. LioWebRTC uses a more object-oriented version of an adjacency list to represent the p2p graph, with the weights of the edges representing roundtrip latency between two nodes. With `selfOptimize` set to true, peers automatically disconnect from neighbors with latencies >=1 std. deviation from the mean.
+  - `bool selfOptimize` - *optional(=true)* whether or not peers in a partial mesh network should self-optimize their connections. LioWebRTC uses a more object-oriented version of an adjacency list to represent the p2p graph, with the weights of the edges representing roundtrip latency between two nodes. With `selfOptimize` set to true, peers automatically disconnect from neighbors with latencies >=1 std. deviation from the mean, and reconnect to a new random peer.
 
 ### Fields
 
