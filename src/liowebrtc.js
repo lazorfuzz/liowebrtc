@@ -4,7 +4,7 @@ import mockconsole from 'mockconsole';
 import WebRTC from './webrtc';
 import webrtcSupport from './webrtcsupport';
 import SocketIoConnection from './socketioconnection';
-import { Graph, addNode, addConnection, getConnectedPeers } from './PeerOptimizer';
+import { Graph, addNode, addConnection, getConnectedPeers, getDroppablePeers } from './PeerOptimizer';
 import { inheritedMethods, defaultConfig, defaultChannel } from './constants';
 
 class LioWebRTC extends WildEmitter {
@@ -82,7 +82,7 @@ class LioWebRTC extends WildEmitter {
             sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
             broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null,
           });
-          this.sendPing(peer, true);
+          this.sendPing(peer, peer.id, true);
         } else {
           return;
         }
@@ -250,7 +250,8 @@ class LioWebRTC extends WildEmitter {
     peer.sendDirectly('_pong', [now, now - start], channel);
   }
 
-  sendPing(peer, firstPing = false, channel = defaultChannel) {
+  sendPing(peer, peerId, firstPing = false, channel = defaultChannel) {
+    console.log('SENDING PING', peer);
     const self = this;
     if (firstPing) peer.start();
     setTimeout(() => {
@@ -259,13 +260,13 @@ class LioWebRTC extends WildEmitter {
         if (firstPing) this.emit('createdPeer', peer);
       } else {
         // The channel is closed, remove the peer
-        console.log('removing peer, ping failed');
-        if (peer.id) self.unconnectivePeers[peer.id] = true;
+        console.log('removing peer, ping failed', peerId);
+        self.unconnectivePeers[peerId] = true;
         peer.end();
         this.getClients((err, clients) => {
           console.log('CLIENT RESULTS', clients);
           const ids = Object.keys(clients).filter((c) => {
-            if (!self.unconnectivePeers[c] === true || c === this.id) {
+            if (self.unconnectivePeers[c] === true || c === this.id) {
               return false;
             }
             return true;
@@ -381,10 +382,10 @@ class LioWebRTC extends WildEmitter {
         let peer;
 
         this.roomCount = Object.keys(roomDescription.clients).length;
-        console.log(roomDescription.clients);
+        console.log(roomDescription);
         this.id = roomDescription.you;
         this.unconnectivePeers[this.id] = true;
-        for (id of Object.keys(roomDescription.clients).reverse()) {
+        for (id of Object.keys(roomDescription.clients).reverse().filter(item => item !== this.id)) {
           client = roomDescription.clients[id];
           for (type in client) {
             if (client[type]) {
@@ -401,7 +402,7 @@ class LioWebRTC extends WildEmitter {
                   offerToReceiveVideo: !this.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
                 },
               });
-              this.sendPing(peer, true);
+              this.sendPing(peer, peer.id, true);
             }
           }
         }
@@ -459,17 +460,17 @@ class LioWebRTC extends WildEmitter {
   }
 
   connectToPeer(peerId, client) {
-    let id;
+    console.log('CONNECTING TO', peerId);
     let type;
     let peer;
     for (type in client) {
       if (client[type]) {
         const peerCount = this.webrtc.getPeers().length;
-        if (this.config.network.maxPeers > 0 && (peerCount >= this.config.network.minPeers || peerCount >= this.config.network.maxPeers)) {
+        if (this.config.network.maxPeers > 0 && peerCount >= this.config.network.maxPeers) {
           break;
         }
         peer = this.webrtc.createPeer({
-          id,
+          peerId,
           type,
           enableDataChannels: this.config.enableDataChannels && type !== 'screen',
           receiveMedia: {
@@ -477,7 +478,8 @@ class LioWebRTC extends WildEmitter {
             offerToReceiveVideo: !this.config.dataOnly && this.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
           },
         });
-        this.sendPing(peer, true);
+        console.log('ABOUT TO SEND PING', peer);
+        this.sendPing(peer, peerId, true);
       }
     }
   }
