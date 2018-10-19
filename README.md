@@ -59,7 +59,7 @@ const webrtc = new LioWebRTC({
 ```
 
 ### Partial mesh network
-Peers only form direct connections with a maximum of maxPeers and a minimum of minPeers. shout()ing still works because peers wil re-propagate messages to other peers.
+Peers only form direct connections with a maximum of maxPeers and a minimum of minPeers. shout()ing still works because peers wil re-propagate messages to other peers. Note: partial mesh networks only work if you're only using data channels.
 ```js
 const webrtc = new LioWebRTC({
   dataOnly: true,

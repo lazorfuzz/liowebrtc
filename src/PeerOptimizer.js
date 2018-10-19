@@ -13,9 +13,6 @@ export function addConnection(node1Id, node2Id, latency = 0) {
   const nodeA = Graph.getNodeById(node1Id) || new PeerNode(node1Id);
   const nodeB = Graph.getNodeById(node2Id) || new PeerNode(node2Id);
   const edgeAB = new Edge(nodeA, nodeB, latency);
-  console.log('ADDED CONNECTION', node1Id, node2Id, latency);
-  console.log(Graph.nodes);
-  console.log(Graph.edges);
   return Graph.addEdge(edgeAB);
 }
 
@@ -23,6 +20,21 @@ export function removeConnection(node1Id, node2Id) {
   const nodeA = Graph.getNodeById(node1Id);
   const nodeB = Graph.getNodeById(node2Id);
   if (nodeA && nodeB) Graph.deleteEdge(Graph.findEdge(nodeA, nodeB));
+}
+
+export function getNeighbors(nodeId) {
+  const node = Graph.getNodeById(nodeId);
+  const neighbors = node.getNeighbors();
+  return neighbors.map(n => n.getId());
+}
+
+export function isNeighbor(node1Id, node2Id) {
+  const nodeA = Graph.getNodeById(node1Id) || new PeerNode(node1Id);
+  const nodeB = Graph.getNodeById(node2Id) || new PeerNode(node2Id);
+  if (nodeA.hasNeighbor(nodeB)) {
+    return true;
+  }
+  return false;
 }
 
 export function getPeerLatencies(nodeId) {
@@ -37,12 +49,6 @@ export function getPeerLatencies(nodeId) {
     });
     return result;
   }
-}
-
-export function getConnectedPeers(nodeId) {
-  const node = Graph.getNodeById(nodeId);
-  const neighbors = node.getNeighbors();
-  return neighbors.map(n => n.getId());
 }
 
 export function average(vals) {

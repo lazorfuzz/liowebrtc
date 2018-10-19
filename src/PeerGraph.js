@@ -69,6 +69,9 @@ export default class PeerGraph {
   }
 
   deleteEdge(edge) {
+    if (!edge) {
+      return;
+    }
     if (this.edges[edge.getId()]) {
       delete this.edges[edge.getId()];
     }

@@ -2,7 +2,6 @@ import PeerConnection from 'rtcpeerconnection';
 import WildEmitter from 'wildemitter';
 import FileTransfer from 'filetransfer';
 import webrtcSupport from './webrtcsupport';
-import { removeConnection } from './PeerOptimizer';
 
 function isAllTracksEnded(stream) {
   let isAllTracksEnded = true;
@@ -63,7 +62,6 @@ class Peer extends WildEmitter {
         case 'closed':
           this.handleStreamRemoved(false);
           self.parent.emit('removedPeer', self);
-          removeConnection(self.parent.id, this.id);
           break;
         default:
           break;
@@ -192,7 +190,6 @@ class Peer extends WildEmitter {
     // if we don't have one by this label, create it
     channel = this.channels[name] = this.pc.createDataChannel(name, opts);
     this._observeDataChannel(channel);
-    console.log('CHANNEL', channel);
     return channel;
   }
 

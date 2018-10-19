@@ -4,7 +4,7 @@ import mockconsole from 'mockconsole';
 import WebRTC from './webrtc';
 import webrtcSupport from './webrtcsupport';
 import SocketIoConnection from './socketioconnection';
-import { Graph, addNode, addConnection, getConnectedPeers, getDroppablePeers } from './PeerOptimizer';
+import { Graph, addNode, addConnection, removeConnection, getNeighbors, isNeighbor, getDroppablePeers } from './PeerOptimizer';
 import { inheritedMethods, defaultConfig, defaultChannel } from './constants';
 
 class LioWebRTC extends WildEmitter {
@@ -70,7 +70,7 @@ class LioWebRTC extends WildEmitter {
           });
           // if (!peer) peer = peers[0]; // fallback for old protocol versions
         }
-        if (this.config.network.maxPeers > 0 && totalPeers >= this.config.network.maxPeers) {
+        if (this.config.dataOnly && this.config.network.maxPeers > 0 && totalPeers >= this.config.network.maxPeers) {
           return;
         }
         if (!peer) {
@@ -168,6 +168,16 @@ class LioWebRTC extends WildEmitter {
       self.webrtc.sendToAll('mute', { name: 'video' });
     });
 
+    self.on('removedPeer', (peer) => {
+      if (peer.id) {
+        removeConnection(this.id, peer.id);
+      }
+
+      if (this.config.dataOnly && this.config.network.maxPeers > 0 && getNeighbors(this.id).length < this.config.network.minPeers) {
+        this.connectToRandomPeer();
+      }
+    });
+
     this.webrtc.on('channelMessage', (peer, label, data) => {
       if (data.payload._id && this.peerDataCache[data.payload._id]) {
         return;
@@ -251,7 +261,6 @@ class LioWebRTC extends WildEmitter {
   }
 
   sendPing(peer, peerId, firstPing = false, channel = defaultChannel) {
-    console.log('SENDING PING', peer);
     const self = this;
     if (firstPing) peer.start();
     setTimeout(() => {
@@ -260,26 +269,22 @@ class LioWebRTC extends WildEmitter {
         if (firstPing) this.emit('createdPeer', peer);
       } else {
         // The channel is closed, remove the peer
-        console.log('removing peer, ping failed', peerId);
+        // console.log('removing peer, ping failed', peerId);
         self.unconnectivePeers[peerId] = true;
         peer.end();
-        this.getClients((err, clients) => {
-          console.log('CLIENT RESULTS', clients);
-          const ids = Object.keys(clients).filter((c) => {
-            if (self.unconnectivePeers[c] === true || c === this.id) {
-              return false;
-            }
-            return true;
-          });
-          console.log('IDS', ids, self.unconnectivePeers);
-          if (!ids.length) {
-            return;
-          }
-          const randId = ids[Math.floor(Math.random() * ids.length)];
-          this.connectToPeer(randId, clients[randId]);
-        });
+        this.connectToRandomPeer();
       }
     }, 1000);
+  }
+
+  connectToRandomPeer() {
+    this.getClients((err, clients) => {
+      const ids = Object.keys(clients).filter(c => !(this.unconnectivePeers[c] === true || c === this.id || isNeighbor(this.id, c)));
+      if (ids.length) {
+        const randId = ids[Math.floor(Math.random() * ids.length)];
+        this.connectToPeer(randId, clients[randId]);
+      }
+    });
   }
 
   sendConnections(peer, channel = defaultChannel) {
@@ -382,15 +387,16 @@ class LioWebRTC extends WildEmitter {
         let peer;
 
         this.roomCount = Object.keys(roomDescription.clients).length;
-        console.log(roomDescription);
+        // console.log(roomDescription);
         this.id = roomDescription.you;
+        addNode(this.id);
         this.unconnectivePeers[this.id] = true;
         for (id of Object.keys(roomDescription.clients).reverse().filter(item => item !== this.id)) {
           client = roomDescription.clients[id];
           for (type in client) {
             if (client[type]) {
               const peerCount = this.webrtc.getPeers().length;
-              if (this.config.network.maxPeers > 0 && (peerCount >= this.config.network.minPeers || peerCount >= this.config.network.maxPeers)) {
+              if (this.config.dataOnly && this.config.network.maxPeers > 0 && (peerCount >= this.config.network.minPeers || peerCount >= this.config.network.maxPeers)) {
                 break;
               }
               peer = self.webrtc.createPeer({
@@ -460,7 +466,6 @@ class LioWebRTC extends WildEmitter {
   }
 
   connectToPeer(peerId, client) {
-    console.log('CONNECTING TO', peerId);
     let type;
     let peer;
     for (type in client) {
@@ -470,7 +475,7 @@ class LioWebRTC extends WildEmitter {
           break;
         }
         peer = this.webrtc.createPeer({
-          peerId,
+          id: peerId,
           type,
           enableDataChannels: this.config.enableDataChannels && type !== 'screen',
           receiveMedia: {
@@ -478,7 +483,6 @@ class LioWebRTC extends WildEmitter {
             offerToReceiveVideo: !this.config.dataOnly && this.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
           },
         });
-        console.log('ABOUT TO SEND PING', peer);
         this.sendPing(peer, peerId, true);
       }
     }
