@@ -371,9 +371,9 @@ atob@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
 
-attachmediastream@^2.0.0:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/attachmediastream/-/attachmediastream-2.0.2.tgz#796e4561637c718afc5d28891c4c7a701bdf7354"
+attachmediastream@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/attachmediastream/-/attachmediastream-2.0.4.tgz#342c19ad1f7211761ee19ab5873339486c1926bf"
 
 aws-sign2@~0.7.0:
   version "0.7.0"

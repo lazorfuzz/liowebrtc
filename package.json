@@ -5,7 +5,7 @@
   "main": "./dist/liowebrtc.js",
   "description": "A WebRTC library that makes it easy to embed peer to peer communication into UI components.",
   "dependencies": {
-    "attachmediastream": "^2.0.0",
+    "attachmediastream": "^2.0.4",
     "eslint-plugin-jest": "^21.24.1",
     "filetransfer": "^2.0.4",
     "getscreenmedia": "^5.0.0",
