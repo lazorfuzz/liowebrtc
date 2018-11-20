@@ -172,8 +172,13 @@ class LioWebRTC extends WildEmitter {
       if (peer.id) {
         removeConnection(this.id, peer.id);
       }
+    });
 
-      if (this.config.dataOnly && this.config.network.maxPeers > 0 && getNeighbors(this.id).length < this.config.network.minPeers) {
+    self.on('channelClose', (channel) => {
+      if (channel.label === 'liowebrtc' &&
+        this.config.dataOnly &&
+        this.config.network.maxPeers > 0 &&
+        getNeighbors(this.id).length < this.config.network.minPeers) {
         this.connectToRandomPeer();
       }
     });
@@ -261,20 +266,23 @@ class LioWebRTC extends WildEmitter {
   }
 
   sendPing(peer, peerId, firstPing = false, channel = defaultChannel) {
-    const self = this;
     if (firstPing) peer.start();
-    setTimeout(() => {
-      if (peer.sendDirectly('_ping', Date.now(), channel)) {
-        // this.logger.log('sent ping to', peer.id);
-        if (firstPing) this.emit('createdPeer', peer);
-      } else {
-        // The channel is closed, remove the peer
-        // console.log('removing peer, ping failed', peerId);
-        self.unconnectivePeers[peerId] = true;
-        peer.end();
-        this.connectToRandomPeer();
+    setTimeout(this.ping.bind(this, peer, peerId, firstPing, channel), 1000);
+  }
+
+  ping(peer, peerId, firstPing, channel, tries = 0) {
+    if (peer.sendDirectly('_ping', Date.now(), channel)) {
+      // this.logger.log('sent ping to', peer.id);
+      if (firstPing) this.emit('createdPeer', peer);
+    } else {
+      // The channel is closed
+      if (tries === 2) {
+        this.unconnectivePeers[peerId] = true;
+        peer.end(false);
+        return;
       }
-    }, 1000);
+      setTimeout(this.ping.bind(this, peer, peerId, firstPing, channel, tries + 1), 1000);
+    }
   }
 
   connectToRandomPeer() {
@@ -308,6 +316,10 @@ class LioWebRTC extends WildEmitter {
           peer.sendDirectly('_propagate', data, channel, true);
         }
       });
+  }
+
+  getSlowestPeers() {
+    const peers = getDroppablePeers();
   }
 
   leaveRoom() {

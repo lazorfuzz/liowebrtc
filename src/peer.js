@@ -61,7 +61,6 @@ class Peer extends WildEmitter {
           break;
         case 'closed':
           this.handleStreamRemoved(false);
-          self.parent.emit('removedPeer', self);
           break;
         default:
           break;
@@ -231,10 +230,13 @@ class Peer extends WildEmitter {
     this.pc.offer(constraints, (err, success) => { });
   }
 
-  end() {
+  end(emitRemoval = true) {
     if (this.closed) return;
     this.pc.close();
-    this.handleStreamRemoved();
+    this.handleStreamRemoved(emitRemoval);
+    if (emitRemoval) {
+      this.parent.emit('removedPeer', this);
+    }
   }
 
   handleRemoteStreamAdded(event) {
