@@ -141,7 +141,6 @@ class Party extends Component {
     this.state = {
       nick: this.props.nick,
       roomID: `party-${this.props.roomName}`,
-      peers: [],
       muted: false,
       camPaused: false
     };
@@ -162,22 +161,13 @@ class Party extends Component {
     });
 
     this.webrtc.on('peerStreamAdded', this.addVideo);
-    this.webrtc.on('peerStreamRemoved', this.removeVideo);
     this.webrtc.on('ready', this.readyToJoin);
     this.webrtc.on('iceFailed', this.handleConnectionError);
     this.webrtc.on('connectivityError', this.handleConnectionError);
   }
 
   addVideo = (stream, peer) => {
-    this.setState({ peers: [...this.state.peers, peer] }, () => {
-      this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
-    });
-  }
-
-  removeVideo = (peer) => {
-    this.setState({
-      peers: this.state.peers.filter(p => !p.closed)
-    });
+    this.webrtc.attachStream(stream, this.remoteVideos[peer.id]);
   }
 
   handleConnectionError = (peer) => {
@@ -193,7 +183,7 @@ class Party extends Component {
   }
 
   // Show fellow peers in the room
-  generateRemotes = () => this.state.peers.map((p) => (
+  generateRemotes = () => this.webrtc.getPeers().map((p) => (
     <div key={p.id}>
       <div id={/* The video container needs a special id */ `${this.webrtc.getContainerId(p)}`}>
         <video
