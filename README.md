@@ -188,7 +188,7 @@ class Party extends Component {
       <div id={/* The video container needs a special id */ `${this.webrtc.getContainerId(p)}`}>
         <video
           // Important: The video element needs both an id and ref
-          id={this.webrtc.getId(p)}
+          id={this.webrtc.getDomId(p)}
           ref={(v) => this.remoteVideos[p.id] = v}
           />
       </div>
@@ -368,7 +368,7 @@ room via the signaling server (similar to `shout`, but not p2p). Listen for peer
 
 `getMyId()` - get your own peer ID
 
-`getId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
+`getDomId(peer)` - get the DOM id associated with a peer's media stream. In JSX, you will need to set the id of the peer's media element to this value.
 - `Peer peer` - the object representing the peer and its peer connection
 
 `getPeerById(id)` - returns a peer with a given `id`

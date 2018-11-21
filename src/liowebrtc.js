@@ -70,7 +70,7 @@ class LioWebRTC extends WildEmitter {
           });
           // if (!peer) peer = peers[0]; // fallback for old protocol versions
         }
-        if (this.config.dataOnly && this.config.network.maxPeers > 0 && totalPeers >= this.config.network.maxPeers) {
+        if (this.config.dataOnly && this.config.constraints.maxPeers > 0 && totalPeers >= this.config.constraints.maxPeers) {
           return;
         }
         if (!peer) {
@@ -82,7 +82,12 @@ class LioWebRTC extends WildEmitter {
             sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
             broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null,
           });
-          this.sendPing(peer, peer.id, true);
+          if (this.config.dataOnly) {
+            this.sendPing(peer, peer.id, true);
+          } else {
+            peer.start();
+            this.emit('createdPeer', peer);
+          }
         } else {
           return;
         }
@@ -177,8 +182,8 @@ class LioWebRTC extends WildEmitter {
     self.on('channelClose', (channel) => {
       if (channel.label === 'liowebrtc' &&
         this.config.dataOnly &&
-        this.config.network.maxPeers > 0 &&
-        getNeighbors(this.id).length < this.config.network.minPeers) {
+        this.config.constraints.maxPeers > 0 &&
+        getNeighbors(this.id).length < this.config.constraints.minPeers) {
         this.connectToRandomPeer();
       }
     });
@@ -220,7 +225,7 @@ class LioWebRTC extends WildEmitter {
           }
           this.cachePeerEvent(data._id, peer.id);
           self.emit('receivedPeerData', data.type, data.payload, peer);
-          if (this.config.network.maxPeers > 0 && data.shout) {
+          if (this.config.constraints.maxPeers > 0 && data.shout) {
             data.senderId = peer.id;
             const fwdData = Object.assign({}, { senderId: peer.id, senderNick: peer.nick }, data);
             this.propagateMessage(fwdData);
@@ -338,10 +343,9 @@ class LioWebRTC extends WildEmitter {
     delete this.connection;
   }
 
-  handlePeerStreamAdded(peer) {
+  handlePeerStreamAdded(stream, peer) {
     const self = this;
-
-    this.emit('peerStreamAdded', peer.stream, peer);
+    //this.emit('peerStreamAdded', stream, peer);
 
     // send our mute status to new peer if we're muted
     // currently called with a small delay because it arrives before
@@ -361,7 +365,7 @@ class LioWebRTC extends WildEmitter {
     // (this.config.media.video) this.emit('peerStreamRemoved', peer);
   }
 
-  getId(peer) { // eslint-disable-line
+  getDomId(peer) { // eslint-disable-line
     return [peer.id, peer.type, peer.broadcaster ? 'broadcasting' : 'incoming'].join('_');
   }
 
@@ -370,7 +374,7 @@ class LioWebRTC extends WildEmitter {
   }
 
   getContainerId(peer) {
-    return `container_${this.getId(peer)}`;
+    return `container_${this.getDomId(peer)}`;
   }
 
   // set volume on video tag for all peers takse a value between 0 and 1
@@ -408,7 +412,7 @@ class LioWebRTC extends WildEmitter {
           for (type in client) {
             if (client[type]) {
               const peerCount = this.webrtc.getPeers().length;
-              if (this.config.dataOnly && this.config.network.maxPeers > 0 && (peerCount >= this.config.network.minPeers || peerCount >= this.config.network.maxPeers)) {
+              if (this.config.dataOnly && this.config.constraints.maxPeers > 0 && (peerCount >= this.config.constraints.minPeers || peerCount >= this.config.constraints.maxPeers)) {
                 break;
               }
               peer = self.webrtc.createPeer({
@@ -420,7 +424,12 @@ class LioWebRTC extends WildEmitter {
                   offerToReceiveVideo: !this.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
                 },
               });
-              this.sendPing(peer, peer.id, true);
+              if (this.config.dataOnly) {
+                this.sendPing(peer, peer.id, true);
+              } else {
+                peer.start();
+                this.emit('createdPeer', peer);
+              }
             }
           }
         }
@@ -483,7 +492,7 @@ class LioWebRTC extends WildEmitter {
     for (type in client) {
       if (client[type]) {
         const peerCount = this.webrtc.getPeers().length;
-        if (this.config.network.maxPeers > 0 && peerCount >= this.config.network.maxPeers) {
+        if (this.config.constraints.maxPeers > 0 && peerCount >= this.config.constraints.maxPeers) {
           break;
         }
         peer = this.webrtc.createPeer({
@@ -495,7 +504,12 @@ class LioWebRTC extends WildEmitter {
             offerToReceiveVideo: !this.config.dataOnly && this.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
           },
         });
-        this.sendPing(peer, peerId, true);
+        if (this.config.dataOnly) {
+          this.sendPing(peer, peerId, true);
+        } else {
+          peer.start();
+          this.emit('createdPeer', peer);
+        }
       }
     }
   }
