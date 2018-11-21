@@ -254,7 +254,7 @@ class Peer extends WildEmitter {
         });
       });
 
-      this.parent.emit('peerStreamAdded', this);
+      this.parent.emit('peerStreamAdded', this.stream, this);
     }
   }
 
