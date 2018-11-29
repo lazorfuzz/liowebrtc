@@ -4,7 +4,7 @@ import mockconsole from 'mockconsole';
 import WebRTC from './webrtc';
 import webrtcSupport from './webrtcsupport';
 import SocketIoConnection from './socketioconnection';
-import { Graph, addNode, addConnection, removeConnection, getNeighbors, isNeighbor, getDroppablePeers } from './PeerOptimizer';
+import { Graph, addNode, addConnection, removeConnection, getNeighbors, isNeighbor, getDroppablePeer } from './PeerOptimizer';
 import { inheritedMethods, defaultConfig, defaultChannel } from './constants';
 
 class LioWebRTC extends WildEmitter {
@@ -323,8 +323,9 @@ class LioWebRTC extends WildEmitter {
       });
   }
 
-  getSlowestPeers() {
-    const peers = getDroppablePeers();
+  trimPeers() {
+    const pid = getDroppablePeer();
+    const peer = this.webrtc.getPeerById(pid);
   }
 
   leaveRoom() {
