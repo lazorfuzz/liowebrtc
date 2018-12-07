@@ -82,7 +82,7 @@ class LioWebRTC extends WildEmitter {
             sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
             broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null,
           });
-          if (this.config.dataOnly) {
+          if (this.config.dataOnly || this.config.constraints.maxPeers > 0) {
             this.sendPing(peer, peer.id, true);
           } else {
             peer.start();
@@ -425,7 +425,7 @@ class LioWebRTC extends WildEmitter {
                   offerToReceiveVideo: !this.config.dataOnly && self.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
                 },
               });
-              if (this.config.dataOnly) {
+              if (this.config.dataOnly || this.config.constraints.maxPeers > 0) {
                 this.sendPing(peer, peer.id, true);
               } else {
                 peer.start();
@@ -479,9 +479,7 @@ class LioWebRTC extends WildEmitter {
   testReadiness() {
     const self = this;
     if (this.sessionReady) {
-      if (this.config.dataOnly || (!this.config.media.video && !this.config.media.audio)) {
-        self.emit('ready', self.connection.getSessionid());
-      } else if (this.webrtc.localStreams.length > 0) {
+      if (this.config.dataOnly || (!this.config.media.video && !this.config.media.audio) || this.webrtc.localStreams.length > 0) {
         self.emit('ready', self.connection.getSessionid());
       }
     }
@@ -505,7 +503,7 @@ class LioWebRTC extends WildEmitter {
             offerToReceiveVideo: !this.config.dataOnly && this.config.receiveMedia.offerToReceiveVideo ? 1 : 0,
           },
         });
-        if (this.config.dataOnly) {
+        if (this.config.dataOnly || this.config.constraints.maxPeers > 0) {
           this.sendPing(peer, peerId, true);
         } else {
           peer.start();

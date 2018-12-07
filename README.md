@@ -272,7 +272,7 @@ export default Party;
       muted: true // mute local video stream to prevent echo
   }
   ```
-  - `object network` - *optional* options for setting minimum and maximum peers to connect to.
+  - `object constraints` - *optional* options for setting minimum and maximum peers to connect to.
   Defaults to
   ```javascript
   {
