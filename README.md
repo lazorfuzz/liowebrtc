@@ -312,6 +312,8 @@ this.webrtc.on('receivedPeerData', (type, payload, peer) => {
 - joining a room with existing peers, once for each peer
 - a new peer joins your room
 
+`'joinedRoom', roomName` - emitted after successfully joining a room.
+
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
 ending all peers, and stopping local stream
 
