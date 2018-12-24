@@ -69,18 +69,9 @@ class Peer extends WildEmitter {
     this.pc.on('signalingStateChange', this.emit.bind(this, 'signalingStateChange'));
     this.logger = this.parent.logger;
 
-    // handle screensharing/broadcast mode
-    if (options.type === 'screen') {
-      if (this.parent.localScreens && this.parent.localScreens[0] && this.sharemyscreen) {
-        this.logger.log('adding local screen stream to peer connection');
-        this.pc.addStream(this.parent.localScreens[0]);
-        this.broadcaster = options.broadcaster;
-      }
-    } else {
-      this.parent.localStreams.forEach((stream) => {
-        self.pc.addStream(stream);
-      });
-    }
+    this.parent.localStreams.forEach((stream) => {
+      self.pc.addStream(stream);
+    });
 
     this.on('channelOpen', (channel) => {
     });

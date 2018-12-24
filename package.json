@@ -8,7 +8,6 @@
     "attachmediastream": "^2.0.4",
     "eslint-plugin-jest": "^21.24.1",
     "filetransfer": "^2.0.4",
-    "getscreenmedia": "^5.0.0",
     "hark": "^1.2.0",
     "mockconsole": "0.0.1",
     "rtcpeerconnection": "^8.0.0",
