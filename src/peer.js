@@ -162,14 +162,14 @@ class Peer extends WildEmitter {
   }
 
   // Internal method registering handlers for a data channel and emitting events on the peer
-  _observeDataChannel(channel) {
+  _observeDataChannel(channel, peer) {
     const self = this;
     channel.onclose = this.emit.bind(this, 'channelClose', channel);
     channel.onerror = this.emit.bind(this, 'channelError', channel);
     channel.onmessage = (event) => {
       self.emit('channelMessage', self, channel.label, JSON.parse(event.data), channel, event);
     };
-    channel.onopen = this.emit.bind(this, 'channelOpen', channel, this);
+    channel.onopen = this.emit.bind(this, 'channelOpen', channel, peer);
   }
 
   // Fetch or create a data channel by the given name
@@ -179,7 +179,7 @@ class Peer extends WildEmitter {
     if (channel) return channel;
     // if we don't have one by this label, create it
     channel = this.channels[name] = this.pc.createDataChannel(name, opts);
-    this._observeDataChannel(channel);
+    this._observeDataChannel(channel, this);
     return channel;
   }
 
@@ -260,7 +260,7 @@ class Peer extends WildEmitter {
 
   handleDataChannelAdded(channel) {
     this.channels[channel.label] = channel;
-    this._observeDataChannel(channel);
+    this._observeDataChannel(channel, this);
   }
 
   sendFile(file) {
