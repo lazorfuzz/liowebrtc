@@ -6,7 +6,6 @@
   "description": "A WebRTC library that makes it easy to embed peer to peer communication into UI components.",
   "dependencies": {
     "attachmediastream": "^2.0.4",
-    "eslint-plugin-jest": "^21.24.1",
     "filetransfer": "^2.0.4",
     "hark": "^1.2.0",
     "mockconsole": "0.0.1",
@@ -25,6 +24,7 @@
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jest": "^22.1.2",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.11.1",
     "geckodriver": "^1.6.1",
