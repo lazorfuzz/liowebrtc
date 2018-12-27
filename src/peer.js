@@ -169,7 +169,7 @@ class Peer extends WildEmitter {
     channel.onmessage = (event) => {
       self.emit('channelMessage', self, channel.label, JSON.parse(event.data), channel, event);
     };
-    channel.onopen = this.emit.bind(this, 'channelOpen', channel, self);
+    channel.onopen = this.emit.bind(this, 'channelOpen', channel, this);
   }
 
   // Fetch or create a data channel by the given name
