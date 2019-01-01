@@ -179,7 +179,7 @@ class Peer extends WildEmitter {
     if (channel) return channel;
     // if we don't have one by this label, create it
     channel = this.channels[name] = this.pc.createDataChannel(name, opts);
-    // this._observeDataChannel(channel, this);
+    this._observeDataChannel(channel, this);
     return channel;
   }
 
@@ -260,7 +260,7 @@ class Peer extends WildEmitter {
 
   handleDataChannelAdded(channel) {
     this.channels[channel.label] = channel;
-    this._observeDataChannel(channel, this);
+    //this._observeDataChannel(channel, this);
   }
 
   sendFile(file) {
