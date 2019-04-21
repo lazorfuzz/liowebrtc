@@ -1,4 +1,7 @@
 # LioWebRTC
+
+[![NPM Downloads](https://img.shields.io/npm/dm/liowebrtc.svg)](https://www.npmjs.com/package/liowebrtc)
+
 A WebRTC library that makes it easy to embed scalable peer to peer communication into UI components.
 
 LioWebRTC works standalone, but it is also compatible with React, Vue, Electron, etc. It can be configured for scalability using partial mesh networks, making it possible to emit data to thousands of peers in a room, while only needing to be connected to at least one other peer in the room.
