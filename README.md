@@ -6,8 +6,6 @@ A WebRTC library that makes it easy to embed scalable peer to peer communication
 
 LioWebRTC works standalone, but it is also compatible with React, Vue, Electron, etc. It can be configured for scalability using partial mesh networks, making it possible to emit data to thousands of peers in a room, while only needing to be connected to at least one other peer in the room.
 
-Peers in a LioWebRTC partial mesh network can self-optimize by default; each peer caches portions of the entire p2p network, and sends their cached graphs to newly joined peers. That means a peer can build an almost complete view of the entire graph without having to query each node (+1 scalability 😉).
-
 [Click here](https://chatdemo.razorfart.com/) to see a chatroom demo built with LioWebRTC.
 
 [Click here](https://vchatdemo.razorfart.com/) to see a video conferencing demo app built with LioWebRTC.
